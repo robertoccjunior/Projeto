@@ -1,0 +1,271 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}ProtejaJá // Plataforma Cidadã de Denúncias Seguras{% endblock %}</title>
+    
+    <!-- Metadados de SEO & Otimização para Motores Generativos (GEO / IAO) -->
+    <meta name="description" content="{% block description %}ProtejaJá é a plataforma de cidadania digital e denúncias seguras com análise em até 24 horas, proteção de dados e verificação de provas.{% endblock %}">
+    <meta name="keywords" content="denúncias seguras, cidadania digital, defesa do consumidor, análise de conformidade, moderação em 24h, proteção de dados, moderação ética, canal de denúncias">
+    <meta name="author" content="ProtejaJá">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="{{ request.base_url }}">
+    <meta name="theme-color" content="#ff007f">
+
+    <!-- OpenGraph (Facebook, WhatsApp, LinkedIn, Perplexity) -->
+    <meta property="og:site_name" content="ProtejaJá">
+    <meta property="og:title" content="{% block og_title %}ProtejaJá // Plataforma Cidadã de Denúncias Seguras{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}Registre ocorrências com provas verificadas, privacidade absoluta e análise de conformidade em até 24h.{% endblock %}">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="{{ request.base_url }}">
+    <meta property="og:locale" content="pt_BR">
+    <meta property="og:image" content="{{ url_for('home_static', filename='img/og-preview.png', _external=True) }}">
+
+    <!-- Twitter Cards (X, Copilot, ChatGPT) -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{% block twitter_title %}ProtejaJá // Tecnologia a Serviço da Cidadania{% endblock %}">
+    <meta name="twitter:description" content="{% block twitter_description %}Sistema de registro de ocorrências comunitárias e proteção cidadã com análise em até 24 horas.{% endblock %}">
+
+    <!-- Dados Estruturados Schema.org JSON-LD para IA e Mecanismos de Busca -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "{{ request.host_url }}#organization",
+          "name": "ProtejaJá",
+          "url": "{{ request.host_url }}",
+          "description": "Plataforma de utilidade pública e cidadania digital para registro, mediação e verificação de conformidade de denúncias comunitárias em até 24h.",
+          "knowsAbout": ["Cidadania Digital", "Direito do Consumidor", "Auditoria de Denúncias", "Moderação Comunitária", "Privacidade de Dados"]
+        },
+        {
+          "@type": "WebSite",
+          "@id": "{{ request.host_url }}#website",
+          "url": "{{ request.host_url }}",
+          "name": "ProtejaJá",
+          "publisher": {"@id": "{{ request.host_url }}#organization"},
+          "inLanguage": "pt-BR"
+        }
+      ]
+    }
+    </script>
+    {% block json_ld %}{% endblock %}
+
+    <!-- CSS Crítico Inlined para Lighthouse 100% (Zero Bloqueio de Rede, 0ms RTT) -->
+    <style>{{ inlined_css|safe }}</style>
+</head>
+<body class="pagina-cyber min-h-screen flex flex-col selection:bg-rose-500 selection:text-white">
+
+    <!-- HEADER COM LOGO CENTRALIZADO & MENU DROPDOWN -->
+    <header class="cyber-nav sticky top-0 z-40">
+        <div class="cyber-nav-container">
+            
+            <!-- ESQUERDA: BOTÃO DO MENU EXPANSÍVEL (MENU ULTRA-VISÍVEL COM OPÇÕES) -->
+            <div class="flex items-center">
+                <button id="btnMenuToggle" type="button" aria-expanded="false" aria-controls="dropdownMenu" aria-label="Abrir menu de navegação"
+                        class="menu-toggle-btn" onclick="toggleCyberMenu()">
+                    <svg class="menu-icon-svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+                        <line x1="3" y1="6" x2="21" y2="6"></line>
+                        <line x1="3" y1="12" x2="21" y2="12"></line>
+                        <line x1="3" y1="18" x2="21" y2="18"></line>
+                    </svg>
+                    <span class="menu-btn-label">MENU</span>
+                    <span class="menu-badge-extra">Opções</span>
+                    <svg class="menu-chevron-svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" focusable="false">
+                        <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
+                    </svg>
+                </button>
+            </div>
+
+            <!-- CENTRO: LOGO PROTEJAJÁ CENTRALIZADO COM ESCUDO VETORIAL -->
+            <div class="header-logo-center">
+                <a href="/home" class="flex items-center gap-1.5 sm:gap-2 group focus:outline-none" aria-label="ProtejaJá - Página Inicial">
+                    <svg class="w-6 h-6 sm:w-8 sm:h-8 text-rose-500 flex-shrink-0 drop-shadow-[0_0_12px_rgba(255,0,127,0.7)]" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                        <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 2.18l7 3.11v5.71c0 4.67-3.13 8.96-7 10-3.87-1.04-7-5.33-7-10V6.29l7-3.11z"/>
+                        <path d="M11 7h2v6h-2zm0 8h2v2h-2z" fill="#ffffff"/>
+                    </svg>
+                    <span class="text-lg sm:text-2xl font-black tracking-wider text-white whitespace-nowrap">
+                        Proteja<span class="text-rose-500 brand-glow">JÁ</span>
+                    </span>
+                </a>
+            </div>
+
+            <!-- DIREITA: AÇÕES DE ENTRAR / CADASTRAR / CONTA -->
+            <div class="flex items-center gap-1.5 sm:gap-2">
+                {% if user %}
+                    <a href="/denuncias" class="btn-cyber-outline btn-pequeno text-xs whitespace-nowrap" title="Acessar minhas ocorrências">
+                        Minha Conta
+                    </a>
+                {% else %}
+                    <a href="/login" class="text-slate-300 hover:text-white font-semibold text-xs sm:text-sm px-2 py-1.5 transition-colors">
+                        Entrar
+                    </a>
+                    <a href="/cadastro" class="btn-cyber-primary btn-pequeno text-xs font-bold whitespace-nowrap">
+                        Cadastrar
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- MENU DROPDOWN SUSPENSO (ABRE AO CLICAR EM MENU) -->
+        <nav id="dropdownMenu" class="hidden dropdown-menu-cyber" aria-label="Menu Principal do Sistema">
+            <div class="dropdown-grid">
+                <a href="/home" class="dropdown-item" onclick="toggleCyberMenu(false)">
+                    <span>Início</span>
+                    <span class="dropdown-item-desc">Página principal e destaques comunitários</span>
+                </a>
+                <a href="/diferencial" class="dropdown-item" onclick="toggleCyberMenu(false)">
+                    <span>Para que Serve o Sistema</span>
+                    <span class="dropdown-item-desc">Diferencial, moderação em até 24h e diretrizes</span>
+                </a>
+                <a href="/denuncias" class="dropdown-item" onclick="toggleCyberMenu(false)">
+                    <span>Cadastre sua Denúncia</span>
+                    <span class="dropdown-item-desc">Canal protegido com termo de responsabilidade legal</span>
+                </a>
+                <a href="/denuncias-publicas" class="dropdown-item" onclick="toggleCyberMenu(false)">
+                    <span>Denúncias Públicas</span>
+                    <span class="dropdown-item-desc">Blog comunitário de ocorrências auditadas com tags</span>
+                </a>
+                <a href="/fato-ou-fake" class="dropdown-item border-rose-500/30" onclick="toggleCyberMenu(false)">
+                    <span class="text-rose-400">Checagem de Fatos (Fato ou Fake)</span>
+                    <span class="dropdown-item-desc">Mande um áudio ou texto e descubra se é real ou golpe em segundos</span>
+                </a>
+                <a href="#stickyEmergencyBar" class="dropdown-item" onclick="toggleCyberMenu(false)">
+                    <span>Telefones de Emergência 24h</span>
+                    <span class="dropdown-item-desc">Polícia 190, Bombeiros 193, SAMU 192, Procon 151</span>
+                </a>
+                {% if user %}
+                    {% if user.is_admin %}
+                        <a href="/admin" class="dropdown-item border-amber-500/40" onclick="toggleCyberMenu(false)">
+                            <span class="text-amber-300">Painel de Moderação</span>
+                            <span class="dropdown-item-desc">Triagem de ocorrências e telemetria</span>
+                        </a>
+                    {% endif %}
+                    <a href="/excluir-conta" class="dropdown-item" onclick="toggleCyberMenu(false)">
+                        <span class="text-red-400">Excluir Conta</span>
+                        <span class="dropdown-item-desc">Direito ao esquecimento LGPD</span>
+                    </a>
+                    <a href="/logout" class="dropdown-item" onclick="toggleCyberMenu(false)">
+                        <span class="text-rose-400">Sair da Conta</span>
+                        <span class="dropdown-item-desc">Encerrar sua sessão com segurança</span>
+                    </a>
+                {% endif %}
+            </div>
+        </nav>
+    </header>
+
+    <!-- MENSAGENS FLASH DO SISTEMA -->
+    {% with mensagens = get_flashed_messages(with_categories=true) %}
+        {% if mensagens %}
+            <aside class="max-w-4xl mx-auto px-4 w-full mt-4" aria-live="polite">
+                {% for categoria, mensagem in mensagens %}
+                    <div class="alert alert-{{ categoria }}">
+                        <span class="alert-icon" aria-hidden="true">
+                            {% if categoria == 'success' %}
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            {% elif categoria == 'error' %}
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                            {% else %}
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+                            {% endif %}
+                        </span>
+                        <span class="flex-1 text-xs sm:text-sm font-medium">{{ mensagem }}</span>
+                        <button type="button" class="alert-close-btn" onclick="this.parentElement.remove()" aria-label="Fechar aviso">&times;</button>
+                    </div>
+                {% endfor %}
+            </aside>
+        {% endif %}
+    {% endwith %}
+
+    <!-- CONTEÚDO PRINCIPAL SEMÂNTICO -->
+    <main class="flex-1 flex flex-col items-center justify-start w-full px-4 py-6" id="mainContent">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- RODAPÉ INSTITUCIONAL SEMÂNTICO -->
+    <footer class="border-t border-slate-800 bg-slate-950/80 py-8 text-center text-xs text-slate-400">
+        <div class="max-w-6xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <p><strong>ProtejaJá</strong> &bull; Sistema Cidadão de Proteção Comunitária e Denúncias Seguras &bull; 2026</p>
+            <div class="flex items-center gap-4 text-slate-400">
+                <a href="#stickyEmergencyBar" class="hover:text-rose-400">Telefones de Emergência</a>
+                <a href="/diferencial" class="hover:text-rose-400">Sobre o Projeto</a>
+                <a href="/denuncias-publicas" class="hover:text-rose-400">Feed Comunitário</a>
+                <a href="/robots.txt" class="hover:text-rose-400">Robots</a>
+                <a href="/sitemap.xml" class="hover:text-rose-400">Sitemap</a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- BARRA FIXA DE UTILIDADE PÚBLICA & EMERGÊNCIA -->
+    <aside class="sticky-emergency-bar" id="stickyEmergencyBar" aria-label="Canais Rápidos de Emergência e Utilidade Pública">
+        <div class="emergency-badge">
+            <span class="pulse-dot" aria-hidden="true"></span>
+            <span>EMERGÊNCIAS 24H</span>
+        </div>
+        <nav class="emergency-links" aria-label="Telefones de Emergência com Discagem Direta">
+            <a href="tel:190" class="emergency-item" title="Polícia Militar - Ligue 190">
+                <strong class="em-num">190</strong>
+                <span class="em-name">Polícia Militar</span>
+            </a>
+            <a href="tel:193" class="emergency-item" title="Corpo de Bombeiros - Ligue 193">
+                <strong class="em-num">193</strong>
+                <span class="em-name">Bombeiros</span>
+            </a>
+            <a href="tel:192" class="emergency-item" title="SAMU - Ligue 192">
+                <strong class="em-num">192</strong>
+                <span class="em-name">SAMU</span>
+            </a>
+            <a href="tel:151" class="emergency-item" title="Procon SP - Ligue 151">
+                <strong class="em-num">151</strong>
+                <span class="em-name">Procon</span>
+            </a>
+            <a href="tel:199" class="emergency-item" title="Defesa Civil - Ligue 199">
+                <strong class="em-num">199</strong>
+                <span class="em-name">Defesa Civil</span>
+            </a>
+            <a href="tel:180" class="emergency-item" title="Central de Atendimento à Mulher - Ligue 180">
+                <strong class="em-num">180</strong>
+                <span class="em-name">Mulher</span>
+            </a>
+            <a href="tel:181" class="emergency-item" title="Disque Denúncia SP - Ligue 181">
+                <strong class="em-num">181</strong>
+                <span class="em-name">Disque Denúncia</span>
+            </a>
+        </nav>
+    </aside>
+
+    <script>
+    function toggleCyberMenu(force) {
+        var menu = document.getElementById("dropdownMenu");
+        var btn = document.getElementById("btnMenuToggle");
+        if (!menu || !btn) return;
+        var willOpen = force !== undefined ? force : menu.classList.contains("hidden");
+        if (willOpen) {
+            menu.classList.remove("hidden");
+            btn.classList.add("active");
+            btn.setAttribute("aria-expanded", "true");
+        } else {
+            menu.classList.add("hidden");
+            btn.classList.remove("active");
+            btn.setAttribute("aria-expanded", "false");
+        }
+    }
+    document.addEventListener("keydown", function(e) {
+        if (e.key === "Escape") toggleCyberMenu(false);
+    });
+    document.addEventListener("click", function(e) {
+        var menu = document.getElementById("dropdownMenu");
+        var btn = document.getElementById("btnMenuToggle");
+        if (menu && btn && !menu.classList.contains("hidden") && !menu.contains(e.target) && !btn.contains(e.target)) {
+            toggleCyberMenu(false);
+        }
+    });
+    </script>
+
+    {% block scripts %}
+    <script src="{{ url_for('home_static', filename='js/home.min.js') }}" defer></script>
+    {% endblock %}
+</body>
+</html>

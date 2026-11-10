@@ -1,0 +1,13 @@
+services:
+  app:
+    build: .
+    container_name: protejaja
+    ports:
+      - "5000:5000"
+    environment:
+      - SECRET_KEY=protejaja-chave-docker
+      - DOCKER=1
+    volumes:
+      - ./db:/app/db
+      - ./backend/uploads:/app/backend/uploads
+    restart: unless-stopped

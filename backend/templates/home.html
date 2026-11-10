@@ -1,0 +1,219 @@
+{% extends "base.html" %}
+
+{% block title %}ProtejaJá // Plataforma Cidadã de Denúncias Seguras{% endblock %}
+{% block description %}ProtejaJá é o canal oficial para registrar ocorrências na sua cidade e bairro. Relatos analisados e publicados em até 24 horas caso sigam as diretrizes comunitárias.{% endblock %}
+
+{% block json_ld %}
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Quanto tempo demora para uma denúncia ser analisada e publicada?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Cada denúncia registrada é avaliada pela nossa equipe e publicada no feed público em até 24 horas, desde que atenda integralmente às diretrizes da comunidade."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Quando devo ligar para o 190, 193 ou SAMU 192 em vez de registrar no ProtejaJá?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "O ProtejaJá é uma plataforma comunitária de fiscalização com apuração em até 24 horas. Em situações de perigo iminente à vida, acidentes graves, crimes em andamento ou urgências médicas, ligue imediatamente para a Polícia Militar (190), Bombeiros (193) ou SAMU (192)."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Quais são as fotos recomendadas para anexar?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "São recomendadas fotos nítidas do produto vencido ou adulterado, etiqueta com lote/data, cupom fiscal ou fachada do local. Imagens não recomendadas, memes ou fotos desconexas não são aceitas."
+      }
+    }
+  ]
+}
+</script>
+{% endblock %}
+
+{% block content %}
+<!-- HERO SECTION CYBER-TECH -->
+<div class="w-full max-w-4xl mx-auto text-center py-12 sm:py-16">
+    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-mono mb-6 uppercase tracking-wider shadow-[0_0_12px_rgba(255,0,127,0.2)]">
+        <span class="w-2 h-2 rounded-full bg-rose-500 animate-pulse"></span>
+        Canal Oficial Cidadão &bull; Análise em até 24 Horas
+    </div>
+
+    <h1 class="text-4xl sm:text-6xl font-extrabold tracking-tight text-white mb-6 leading-tight">
+        Proteja<span class="text-rose-500 brand-glow">JÁ</span>
+        <span class="block text-xl sm:text-2xl font-mono text-slate-400 font-normal mt-2">
+            A Voz da Sua Região com Seriedade e Respeito
+        </span>
+    </h1>
+
+    <p class="text-base sm:text-lg text-slate-300 max-w-2xl mx-auto leading-relaxed mb-8">
+        Registre ocorrências sobre estabelecimentos, produtos e serviços na sua cidade e bairro. Seus relatos passam por conferência prévia e <strong>são postados em até 24 horas</strong> se seguirem as diretrizes da comunidade.
+    </p>
+
+    <!-- CTAS DIRETOS -->
+    <div class="flex flex-col sm:flex-row items-center justify-center gap-4 mb-3">
+        {% if user %}
+            <a href="/denuncias" class="btn-cyber-primary btn-grande w-full sm:w-auto">
+                Registrar Nova Denúncia
+            </a>
+            <a href="/denuncias-publicas" class="btn-cyber-outline btn-grande w-full sm:w-auto">
+                Ver Ocorrências Aprovadas
+            </a>
+        {% else %}
+            <a href="/denuncias" class="btn-cyber-primary btn-grande w-full sm:w-auto">
+                Fazer Denúncia
+            </a>
+            <a href="/denuncias-publicas" class="btn-cyber-outline btn-grande w-full sm:w-auto">
+                Ver Ocorrências Aprovadas
+            </a>
+        {% endif %}
+    </div>
+    {% if not user %}
+        <p class="text-xs text-slate-400 mb-10">
+            Deseja acompanhar suas denúncias? <a href="/login" class="text-rose-400 hover:text-rose-300 font-semibold underline">Entrar</a> ou <a href="/cadastro" class="text-rose-400 hover:text-rose-300 font-semibold underline">Cadastre-se</a>
+        </p>
+    {% else %}
+        <div class="mb-10"></div>
+    {% endif %}
+
+    <!-- SEÇÃO DE RECURSOS E DIRETRIZES DA PLATAFORMA // GRADE NATIVA -->
+    <section class="secao-recursos-cyber w-full mb-16 text-left" aria-labelledby="titulo-recursos-principais">
+        <h2 id="titulo-recursos-principais" class="sr-only">Recursos e Diretrizes da Plataforma ProtejaJá</h2>
+
+        <!-- CARTÃO DO NOVO RECURSO EM DESTAQUE NO TOPO (LARGURA TOTAL) -->
+        <article class="card-cyber card-recurso-destaque w-full mb-6">
+            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div>
+                    <span class="badge-neon-pink mb-2 inline-block">Novo Recurso</span>
+                    <h3 class="text-xl font-bold text-white mb-1">Checagem de Fatos em Tempo Real (Fato ou Fake)</h3>
+                    <p class="text-xs sm:text-sm text-slate-300 max-w-xl leading-relaxed">
+                        Recebeu um áudio suspeito no WhatsApp ou um boato sobre comércio, alimentos ou segurança? Envie o áudio ou texto e descubra a veracidade em poucos segundos.
+                    </p>
+                </div>
+                <a href="/fato-ou-fake" class="btn-cyber-primary btn-grande whitespace-nowrap self-start sm:self-auto font-bold text-xs sm:text-sm shadow-[0_0_15px_rgba(255,0,127,0.4)]">
+                    Checar Áudio ou Notícia &rarr;
+                </a>
+            </div>
+        </article>
+
+        <!-- GRADE NATIVA DE RECURSOS: REPEAT(AUTO-FIT, MINMAX(280PX, 1FR)) GAP 1.5REM -->
+        <div class="grid-recursos-nativa">
+            <article class="card-cyber">
+                <span class="badge-neon-pink mb-3 inline-block">Prazo Oficial</span>
+                <h3 class="text-lg font-bold text-white mb-2">Análise em até 24 Horas</h3>
+                <p class="text-sm text-slate-400 leading-relaxed">
+                    Toda denúncia passa por conferência atenta e, cumprindo as diretrizes, é disponibilizada publicamente para a comunidade no prazo de 24 horas.
+                </p>
+            </article>
+
+            <article class="card-cyber">
+                <span class="badge-status-ia status-aprovado mb-3 inline-block">Indexação Pública</span>
+                <h3 class="text-lg font-bold text-white mb-2">Blog & Feed com Tags</h3>
+                <p class="text-sm text-slate-400 leading-relaxed">
+                    Consulte denúncias auditadas organizadas por tags temáticas (#Consumidor, #Alimentacao, #PrecoAbusivo) para fácil localização no Google.
+                </p>
+                <a href="/denuncias-publicas" class="inline-flex items-center gap-1 text-xs font-mono text-emerald-400 hover:text-emerald-300 font-bold mt-2">
+                    Explorar blog comunitário &rarr;
+                </a>
+            </article>
+
+            <article class="card-cyber">
+                <span class="badge-status-ia status-alerta mb-3 inline-block">Comprovação</span>
+                <h3 class="text-lg font-bold text-white mb-2">Fotos & Provas Recomendadas</h3>
+                <p class="text-sm text-slate-400 leading-relaxed">
+                    Envie fotos nítidas do produto, data de validade, cupom fiscal ou nota. Imagens desconexas, memes ou fotos não recomendadas não são aceitas.
+                </p>
+            </article>
+        </div>
+    </section>
+
+    <!-- SEÇÃO BLOG CIDADÃO // DESTAQUES RECENTES -->
+    <section class="w-full mb-16 text-left" aria-labelledby="titulo-blog-destaque">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-6">
+            <div>
+                <div class="flex items-center gap-2">
+                    <span class="text-rose-500 font-mono text-sm uppercase tracking-wider font-bold">Blog Comunitário & Utilidade Pública</span>
+                    <span class="h-px w-12 bg-slate-700"></span>
+                </div>
+                <h2 id="titulo-blog-destaque" class="text-2xl sm:text-3xl font-extrabold text-white mt-1">Últimas Ocorrências Auditadas</h2>
+                <p class="text-sm text-slate-400">Publicações recentes de consumidores e munícipes para consulta pública e transparência:</p>
+            </div>
+            <a href="/denuncias-publicas" class="btn-cyber-outline btn-pequeno self-start sm:self-auto">Ver Todas com Tags &rarr;</a>
+        </div>
+
+        {% if denuncias_recentes %}
+            <div class="blog-feed-grid">
+                {% for d in denuncias_recentes %}
+                    <article class="blog-card" itemscope itemtype="https://schema.org/NewsArticle">
+                        <div class="flex items-center justify-between gap-2 mb-2">
+                            <span class="tag-pill">#{{ d.categoria }}</span>
+                            <time class="text-xs text-slate-400 font-mono" datetime="{{ d.criado_em }}">{{ d.criado_em }}</time>
+                        </div>
+                        <h3 class="text-base font-bold text-white mb-1" itemprop="headline">{{ d.assunto }}</h3>
+                        <div class="text-xs text-rose-400 font-mono mb-2">
+                            Empresa: {{ d.denunciado }} &bull; Local: {{ d.cidade }} ({{ d.bairro }})
+                        </div>
+                        <p class="text-xs text-slate-300 leading-relaxed mb-4" itemprop="description">
+                            {{ d.descricao[:130] }}{% if d.descricao|length > 130 %}...{% endif %}
+                        </p>
+                        <div class="pt-3 border-t border-slate-800 flex items-center justify-between mt-auto">
+                            <span class="badge-status-ia status-aprovado text-xs">Auditada</span>
+                            <a href="/denuncias-publicas" class="text-xs text-rose-400 hover:text-rose-300 font-bold">Ver no Blog &rarr;</a>
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="card-cyber text-center py-8">
+                <h3 class="text-base font-bold text-white">Nenhuma denúncia aprovada ainda</h3>
+                <p class="text-xs text-slate-400 mt-1">Seja o primeiro a colaborar registrando uma ocorrência de utilidade pública.</p>
+            </div>
+        {% endif %}
+    </section>
+
+    <!-- SEÇÃO DE DIRETRIZES DA COMUNIDADE & PERGUNTAS FREQUENTES -->
+    <div class="card-cyber text-left">
+        <div class="flex items-center gap-2 mb-6">
+            <span class="text-rose-500 font-mono text-sm uppercase tracking-wider font-bold">Diretrizes da Comunidade & Dúvidas</span>
+            <span class="h-px flex-1 bg-gradient-to-r from-rose-500/40 to-transparent"></span>
+        </div>
+
+        <div class="space-y-6">
+            <div>
+                <h3 class="text-base font-bold text-white mb-1 flex items-center gap-2">
+                    <span class="text-rose-500">Q:</span> Como funciona o prazo de até 24 horas para postagem?
+                </h3>
+                <p class="text-sm text-slate-300 pl-6 leading-relaxed">
+                    Assim que você envia a denúncia, ela entra em status de <strong>Análise</strong>. Nossa equipe confere se os fatos estão bem descritos, se o bairro/unidade foi especificado e se as provas anexadas são válidas. Se tudo estiver de acordo com as regras, ela vai ao ar no feed comunitário em no máximo 24 horas.
+                </p>
+            </div>
+
+            <div class="border-t border-slate-800/80 pt-4">
+                <h3 class="text-base font-bold text-white mb-1 flex items-center gap-2">
+                    <span class="text-rose-500">Q:</span> Quando devo ligar para o 190, 193 ou SAMU 192 em vez do ProtejaJá?
+                </h3>
+                <p class="text-sm text-slate-300 pl-6 leading-relaxed">
+                    O ProtejaJá é uma plataforma de apuração comunitária e defesa cidadã com postagem em até 24 horas. Em situações de flagrante de crime, perigo iminente à vida, acidentes graves ou emergências médicas, acione IMEDIATAMENTE a <strong>Polícia Militar (190)</strong>, o <strong>Corpo de Bombeiros (193)</strong> ou o <strong>SAMU (192)</strong>.
+                </p>
+            </div>
+
+            <div class="border-t border-slate-800/80 pt-4">
+                <h3 class="text-base font-bold text-white mb-1 flex items-center gap-2">
+                    <span class="text-rose-500">Q:</span> Quais fotos são recomendadas e quais são recusadas?
+                </h3>
+                <p class="text-sm text-slate-300 pl-6 leading-relaxed">
+                    <strong>Recomendadas:</strong> Fotos do produto com foco no defeito ou na data de validade vencida, comprovante de pagamento, cupom fiscal ou foto do estabelecimento com o problema visível. <br>
+                    <strong>Recusadas:</strong> Fotos borradas, fotos de pessoas sem autorização, memes, imagens da internet não relacionadas ao fato ou arquivos corrompidos.
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

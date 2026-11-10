@@ -1,0 +1,122 @@
+{% extends "base.html" %}
+
+{% block title %}Cadastro Cidadão // ProtejaJá{% endblock %}
+
+{% block content %}
+<section class="w-full max-w-xl mx-auto py-8">
+    <div class="card-cyber">
+        <div class="text-center mb-6">
+            <span class="badge-neon-pink mb-2">Novo Usuário</span>
+            <h1 class="text-2xl font-extrabold text-white">Criar Conta Cidadã</h1>
+            <p class="text-xs text-slate-400 mt-1">
+                Seus dados serão protegidos por criptografia irreversível e não serão divulgados publicamente.
+            </p>
+        </div>
+
+        <form method="POST" action="/cadastro" class="space-y-4" id="formCadastro">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <!-- NOME E SOBRENOME -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label for="nome" class="campo-label">Primeiro Nome *</label>
+                    <input type="text" id="nome" name="nome" required
+                           class="campo" placeholder="Ex.: Maria" value="{{ request.form.get('nome', '') }}">
+                </div>
+                <div>
+                    <label for="sobrenome" class="campo-label">Sobrenome *</label>
+                    <input type="text" id="sobrenome" name="sobrenome" required
+                           class="campo" placeholder="Ex.: Silva" value="{{ request.form.get('sobrenome', '') }}">
+                </div>
+            </div>
+
+            <!-- EMAIL E DATA DE NASCIMENTO -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label for="email" class="campo-label">E-mail Pessoal *</label>
+                    <input type="email" id="email" name="email" required autocomplete="email"
+                           class="campo" placeholder="maria.silva@exemplo.com" value="{{ request.form.get('email', '') }}">
+                </div>
+                <div>
+                    <label for="data_nascimento" class="campo-label">Data de Nascimento *</label>
+                    <input type="date" id="data_nascimento" name="data_nascimento" required
+                           class="campo" value="{{ request.form.get('data_nascimento', '') }}">
+                </div>
+            </div>
+
+            <!-- CIDADE (SP) -->
+            <div>
+                <label for="cidade" class="campo-label">Cidade *</label>
+                <select id="cidade" name="cidade" required class="campo text-xs">
+                    <option value="">Selecione sua cidade...</option>
+                    <optgroup label="Região de Araraquara">
+                        <option value="Araraquara">Araraquara</option>
+                        <option value="Américo Brasiliense">Américo Brasiliense</option>
+                        <option value="Matão">Matão</option>
+                        <option value="São Carlos">São Carlos</option>
+                        <option value="Taquaritinga">Taquaritinga</option>
+                        <option value="Ibaté">Ibaté</option>
+                        <option value="Boa Esperança do Sul">Boa Esperança do Sul</option>
+                        <option value="Rincão">Rincão</option>
+                        <option value="Santa Lúcia">Santa Lúcia</option>
+                        <option value="Motuca">Motuca</option>
+                        <option value="Gavião Peixoto">Gavião Peixoto</option>
+                        <option value="Nova Europa">Nova Europa</option>
+                        <option value="Tabatinga">Tabatinga</option>
+                        <option value="Borborema">Borborema</option>
+                        <option value="Itápolis">Itápolis</option>
+                    </optgroup>
+                    <optgroup label="Região de Ribeirão Preto">
+                        <option value="Ribeirão Preto">Ribeirão Preto</option>
+                        <option value="Sertãozinho">Sertãozinho</option>
+                        <option value="Cravinhos">Cravinhos</option>
+                        <option value="Jaboticabal">Jaboticabal</option>
+                        <option value="Bebedouro">Bebedouro</option>
+                        <option value="Franca">Franca</option>
+                        <option value="Batatais">Batatais</option>
+                        <option value="Serrana">Serrana</option>
+                        <option value="Jardinópolis">Jardinópolis</option>
+                        <option value="Pontal">Pontal</option>
+                        <option value="Brodowski">Brodowski</option>
+                        <option value="Monte Alto">Monte Alto</option>
+                        <option value="Pitangueiras">Pitangueiras</option>
+                        <option value="Barrinha">Barrinha</option>
+                    </optgroup>
+                    <optgroup label="Outras Cidades do Estado de São Paulo">
+                        <option value="Araras">Araras</option>
+                        <option value="Rio Claro">Rio Claro</option>
+                        <option value="Campinas">Campinas</option>
+                        <option value="Bauru">Bauru</option>
+                        <option value="São Paulo">São Paulo (Capital)</option>
+                        <option value="Outra Cidade (SP)">Outra Cidade de SP</option>
+                    </optgroup>
+                </select>
+            </div>
+
+            <!-- CAMPO SELECIONADO 'OUTRA CIDADE' -->
+            <div id="campoOutraCidade" class="hidden">
+                <label for="cidade_outra" class="campo-label">Nome da Cidade (SP) *</label>
+                <input type="text" id="cidade_outra" name="cidade_outra"
+                       class="campo text-xs" placeholder="Digite o nome da sua cidade">
+            </div>
+
+            <!-- SENHA -->
+            <div>
+                <label for="senha" class="campo-label">Senha de Acesso (Mínimo 6 caracteres) *</label>
+                <input type="password" id="senha" name="senha" required minlength="6" autocomplete="new-password"
+                       class="campo" placeholder="Crie uma senha forte">
+            </div>
+
+            <button type="submit" class="btn-cyber-primary btn-grande w-full mt-2 font-bold">
+                Finalizar Cadastro Protegido
+            </button>
+        </form>
+
+        <div class="mt-6 pt-4 border-t border-slate-800 text-center text-xs">
+            <p class="text-slate-400">
+                Já possui uma conta?
+                <a href="/login" class="text-rose-400 hover:text-rose-300 font-semibold underline">Fazer login</a>
+            </p>
+        </div>
+    </div>
+</section>
+{% endblock %}

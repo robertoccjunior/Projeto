@@ -1,0 +1,696 @@
+/* ==========================================================================
+   PROTEJAJÁ 2.0 // CYBER-TECH DESIGN SYSTEM
+   Identidade Visual: Dark Futuristic Slate + Neon Magenta / Electric Pink Glow
+   ========================================================================== */
+
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap');
+
+:root {
+    --bg-dark: #070a12;
+    --bg-surface: #0f172a;
+    --bg-card: rgba(15, 23, 42, 0.75);
+    --border-glow: rgba(255, 0, 127, 0.28);
+    --border-glow-focus: #ff007f;
+    --neon-pink: #ff007f;
+    --neon-pink-hover: #ff3399;
+    --neon-rose: #f43f5e;
+    --neon-magenta: #d946ef;
+    --text-primary: #f8fafc;
+    --text-secondary: #94a3b8;
+    --text-muted: #64748b;
+    --glow-shadow: 0 0 20px rgba(255, 0, 127, 0.35);
+    --glow-card: 0 10px 30px -5px rgba(0, 0, 0, 0.8), 0 0 20px rgba(255, 0, 127, 0.12);
+}
+
+/* Base & Reset */
+* {
+    box-sizing: border-box;
+}
+
+body.pagina-cyber {
+    background-color: var(--bg-dark);
+    background-image: 
+        radial-gradient(circle at 15% 15%, rgba(255, 0, 127, 0.15) 0%, transparent 40%),
+        radial-gradient(circle at 85% 75%, rgba(217, 70, 239, 0.12) 0%, transparent 45%),
+        linear-gradient(rgba(255, 255, 255, 0.015) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.015) 1px, transparent 1px);
+    background-size: 100% 100%, 100% 100%, 40px 40px, 40px 40px;
+    color: var(--text-primary);
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+    min-height: 100vh;
+    padding-bottom: 58px; /* Espaço para o Sticky Ticker não encobrir conteúdo */
+}
+
+/* Navbar Futurista */
+.cyber-nav {
+    background: rgba(7, 10, 18, 0.85);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-bottom: 1px solid var(--border-glow);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5), 0 0 15px rgba(255, 0, 127, 0.08);
+}
+
+.brand-glow {
+    text-shadow: 0 0 15px rgba(255, 0, 127, 0.6);
+}
+
+/* Cards com Glassmorphism e Cyber-Glow */
+.card-cyber {
+    background: var(--bg-card);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--border-glow);
+    border-radius: 1.25rem;
+    box-shadow: var(--glow-card);
+    padding: 1.75rem;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.card-cyber:hover {
+    border-color: rgba(255, 0, 127, 0.45);
+    box-shadow: 0 15px 35px -5px rgba(0, 0, 0, 0.85), 0 0 25px rgba(255, 0, 127, 0.22);
+}
+
+/* Botões Futuristas */
+.btn-cyber-primary {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    background: linear-gradient(135deg, #ff007f 0%, #be123c 100%);
+    color: #ffffff;
+    font-weight: 700;
+    font-size: 0.875rem;
+    padding: 0.625rem 1.25rem;
+    border-radius: 0.75rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 0 15px rgba(255, 0, 127, 0.4);
+    transition: all 0.2s ease;
+    cursor: pointer;
+    text-decoration: none;
+    letter-spacing: 0.03em;
+}
+
+.btn-cyber-primary:hover {
+    background: linear-gradient(135deg, #ff3399 0%, #e11d48 100%);
+    box-shadow: 0 0 25px rgba(255, 0, 127, 0.7);
+    transform: translateY(-2px);
+    color: #ffffff;
+}
+
+.btn-cyber-primary:active {
+    transform: translateY(0);
+}
+
+.btn-cyber-outline {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    background: rgba(255, 0, 127, 0.06);
+    color: var(--neon-pink);
+    border: 1.5px solid var(--neon-pink);
+    font-weight: 600;
+    font-size: 0.875rem;
+    padding: 0.625rem 1.25rem;
+    border-radius: 0.75rem;
+    box-shadow: 0 0 10px rgba(255, 0, 127, 0.15);
+    transition: all 0.2s ease;
+    cursor: pointer;
+    text-decoration: none;
+}
+
+.btn-cyber-outline:hover {
+    background: rgba(255, 0, 127, 0.18);
+    color: #ffffff;
+    box-shadow: 0 0 20px rgba(255, 0, 127, 0.4);
+    transform: translateY(-2px);
+}
+
+.btn-grande {
+    padding: 0.875rem 1.75rem;
+    font-size: 1rem;
+}
+
+.btn-pequeno {
+    padding: 0.35rem 0.75rem;
+    font-size: 0.75rem;
+}
+
+/* Campos de Formulário Cyber */
+.campo-label {
+    display: block;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #e2e8f0;
+    margin-bottom: 0.4rem;
+    letter-spacing: 0.01em;
+}
+
+.campo {
+    width: 100%;
+    border: 1px solid rgba(255, 0, 127, 0.25);
+    background-color: rgba(15, 23, 42, 0.85);
+    border-radius: 0.75rem;
+    padding: 0.65rem 1rem;
+    font-size: 0.92rem;
+    color: #f8fafc;
+    transition: all 0.2s ease;
+    outline: none;
+}
+
+.campo::placeholder {
+    color: #64748b;
+}
+
+.campo:focus {
+    border-color: var(--neon-pink);
+    box-shadow: 0 0 0 3px rgba(255, 0, 127, 0.2), 0 0 15px rgba(255, 0, 127, 0.25);
+    background-color: rgba(15, 23, 42, 0.95);
+}
+
+.campo-arquivo {
+    display: block;
+    width: 100%;
+    font-size: 0.875rem;
+    color: #94a3b8;
+    border: 1px dashed rgba(255, 0, 127, 0.35);
+    border-radius: 0.75rem;
+    padding: 0.85rem;
+    background-color: rgba(15, 23, 42, 0.6);
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.campo-arquivo:hover {
+    border-color: var(--neon-pink);
+    box-shadow: 0 0 15px rgba(255, 0, 127, 0.15);
+}
+
+/* Badges e Pílulas */
+.badge-neon-pink {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    background: rgba(255, 0, 127, 0.12);
+    color: #ff3399;
+    border: 1px solid rgba(255, 0, 127, 0.35);
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+}
+
+.badge-status-ia {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    padding: 0.25rem 0.65rem;
+    border-radius: 9999px;
+    letter-spacing: 0.03em;
+}
+
+.status-analise {
+    background: rgba(59, 130, 246, 0.15);
+    color: #60a5fa;
+    border: 1px solid rgba(59, 130, 246, 0.35);
+}
+
+.status-aprovado {
+    background: rgba(34, 197, 94, 0.15);
+    color: #4ade80;
+    border: 1px solid rgba(34, 197, 94, 0.35);
+}
+
+.status-reprovado {
+    background: rgba(239, 68, 68, 0.15);
+    color: #f87171;
+    border: 1px solid rgba(239, 68, 68, 0.35);
+}
+
+.status-alerta {
+    background: rgba(245, 158, 11, 0.15);
+    color: #fbbf24;
+    border: 1px solid rgba(245, 158, 11, 0.35);
+    animation: pulsarAlerta 2s infinite ease-in-out;
+}
+
+@keyframes pulsarAlerta {
+    0%, 100% { box-shadow: 0 0 5px rgba(245, 158, 11, 0.2); }
+    50% { box-shadow: 0 0 15px rgba(245, 158, 11, 0.5); }
+}
+
+/* Alertas do Sistema */
+.alert {
+    border-radius: 0.75rem;
+    padding: 0.85rem 1.25rem;
+    font-size: 0.9rem;
+    margin-top: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    animation: slideDownFade 0.3s ease;
+}
+
+.alert-success {
+    background-color: rgba(6, 78, 59, 0.75);
+    color: #a7f3d0;
+    border: 1px solid #059669;
+    box-shadow: 0 0 15px rgba(5, 150, 105, 0.2);
+}
+
+.alert-error {
+    background-color: rgba(136, 19, 55, 0.75);
+    color: #fecdd3;
+    border: 1px solid #be123c;
+    box-shadow: 0 0 15px rgba(190, 24, 60, 0.3);
+}
+
+@keyframes slideDownFade {
+    from { opacity: 0; transform: translateY(-10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* ==========================================================================
+   CONTRATO DE RESPONSABILIDADE LEGAL (SCROLL-TO-AGREE)
+   ========================================================================== */
+.contrato-card {
+    background: rgba(10, 15, 28, 0.9);
+    border: 1px solid rgba(255, 0, 127, 0.3);
+    border-radius: 0.875rem;
+    padding: 1.25rem;
+    margin-top: 1.25rem;
+    box-shadow: 0 0 15px rgba(255, 0, 127, 0.08);
+}
+
+.contrato-scrollbox {
+    max-height: 180px;
+    overflow-y: scroll;
+    padding: 0.85rem;
+    background: rgba(3, 7, 18, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 0.5rem;
+    font-size: 0.8rem;
+    line-height: 1.5;
+    color: #cbd5e1;
+}
+
+.contrato-scrollbox::-webkit-scrollbar {
+    width: 6px;
+}
+
+.contrato-scrollbox::-webkit-scrollbar-track {
+    background: rgba(15, 23, 42, 0.5);
+    border-radius: 3px;
+}
+
+.contrato-scrollbox::-webkit-scrollbar-thumb {
+    background: var(--neon-pink);
+    border-radius: 3px;
+    box-shadow: 0 0 5px var(--neon-pink);
+}
+
+.contrato-aviso-scroll {
+    font-size: 0.75rem;
+    color: #fb7185;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 0.5rem;
+}
+
+.checkbox-cyber {
+    accent-color: var(--neon-pink);
+    width: 1.15rem;
+    height: 1.15rem;
+    cursor: pointer;
+}
+
+/* ==========================================================================
+   STICKY PERSISTENT FOOTER TICKER // RADAR EM TEMPO REAL
+   ========================================================================== */
+.sticky-news-ticker {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 48px;
+    background: rgba(7, 10, 18, 0.94);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border-top: 1px solid rgba(255, 0, 127, 0.35);
+    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.7), 0 0 15px rgba(255, 0, 127, 0.15);
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    padding: 0 1rem;
+    overflow: hidden;
+}
+
+.ticker-radar-badge {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: linear-gradient(135deg, rgba(255, 0, 127, 0.25) 0%, rgba(217, 70, 239, 0.15) 100%);
+    border: 1px solid rgba(255, 0, 127, 0.4);
+    padding: 0.3rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    color: #ff3399;
+    white-space: nowrap;
+    box-shadow: 0 0 10px rgba(255, 0, 127, 0.2);
+    margin-right: 1.25rem;
+    flex-shrink: 0;
+}
+
+.radar-pulse-dot {
+    width: 8px;
+    height: 8px;
+    background-color: #ff007f;
+    border-radius: 50%;
+    box-shadow: 0 0 8px #ff007f;
+    animation: radarPulse 1.4s infinite ease-in-out;
+}
+
+@keyframes radarPulse {
+    0%, 100% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.4); opacity: 0.4; }
+}
+
+.ticker-viewport {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+    height: 100%;
+    display: flex;
+    align-items: center;
+}
+
+/* Modo Estático (1-2 itens) */
+.ticker-track.static-mode {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    width: 100%;
+}
+
+/* Modo Marquee Contínuo (3+ itens) */
+.ticker-track.marquee-mode {
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+    animation: tickerScroll 28s linear infinite;
+}
+
+.ticker-track.marquee-mode:hover {
+    animation-play-state: paused;
+}
+
+@keyframes tickerScroll {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+
+.ticker-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-size: 0.85rem;
+    color: #e2e8f0;
+    margin-right: 2.5rem;
+    text-decoration: none;
+    transition: color 0.15s ease;
+}
+
+.ticker-item:hover {
+    color: var(--neon-pink);
+}
+
+.ticker-item-tag {
+    background: rgba(255, 255, 255, 0.08);
+    color: #cbd5e1;
+    padding: 0.15rem 0.45rem;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    font-weight: 700;
+}
+
+.ticker-item-time {
+    color: #64748b;
+    font-size: 0.72rem;
+    font-family: 'JetBrains Mono', monospace;
+}
+
+/* HUD Métricas Admin */
+.hud-stat-card {
+    background: rgba(15, 23, 42, 0.7);
+    border: 1px solid rgba(255, 0, 127, 0.2);
+    border-radius: 1rem;
+    padding: 1.25rem;
+    text-align: center;
+    transition: all 0.2s ease;
+}
+
+.hud-stat-card:hover {
+    border-color: var(--neon-pink);
+    transform: translateY(-2px);
+    box-shadow: 0 0 15px rgba(255, 0, 127, 0.2);
+}
+
+.hud-stat-val {
+    font-size: 2rem;
+    font-weight: 800;
+    font-family: 'JetBrains Mono', monospace;
+    color: #f8fafc;
+}
+
+/* ==========================================================================
+   ACERTOS DE UI/UX // LIGHTHOUSE 100/100, WCAG AAA & W3C
+   ========================================================================== */
+
+/* 1. Utilitário de Acessibilidade: Screen-Reader Only (sr-only) */
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border-width: 0;
+}
+
+/* 2. Menu de Navegação - Botão Ultra-Nítido, Visível com MENU & Opções */
+.cyber-nav-container {
+    padding: 10px 16px;
+}
+
+.menu-toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: linear-gradient(135deg, rgba(255, 0, 127, 0.18) 0%, rgba(15, 23, 42, 0.95) 100%);
+    color: #ffffff;
+    border: 1.5px solid rgba(255, 0, 127, 0.6);
+    border-radius: 10px;
+    padding: 8px 14px;
+    font-size: 13px;
+    font-weight: 800;
+    letter-spacing: 0.05em;
+    cursor: pointer;
+    box-shadow: 0 0 14px rgba(255, 0, 127, 0.3), inset 0 0 8px rgba(255, 0, 127, 0.12);
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    user-select: none;
+    -webkit-user-select: none;
+}
+
+.menu-toggle-btn:hover {
+    background: linear-gradient(135deg, rgba(255, 0, 127, 0.32) 0%, rgba(30, 41, 59, 0.95) 100%);
+    border-color: #ff007f;
+    box-shadow: 0 0 22px rgba(255, 0, 127, 0.55), inset 0 0 12px rgba(255, 0, 127, 0.2);
+    transform: translateY(-1px);
+    color: #ffffff;
+}
+
+.menu-toggle-btn:focus {
+    outline: none;
+}
+
+.menu-toggle-btn:focus-visible {
+    outline: 2px solid var(--neon-pink);
+    outline-offset: 3px;
+    box-shadow: 0 0 0 4px rgba(255, 0, 127, 0.4), 0 0 20px rgba(255, 0, 127, 0.5);
+}
+
+.menu-toggle-btn.active {
+    background: linear-gradient(135deg, rgba(255, 0, 127, 0.4) 0%, rgba(15, 23, 42, 0.98) 100%);
+    border-color: #ff007f;
+    box-shadow: 0 0 22px rgba(255, 0, 127, 0.6);
+}
+
+.menu-toggle-btn .menu-icon-svg {
+    width: 18px;
+    height: 18px;
+    color: #ff007f;
+    flex-shrink: 0;
+    transition: transform 0.2s ease;
+}
+
+.menu-toggle-btn:hover .menu-icon-svg {
+    transform: scale(1.1);
+    color: #ff3399;
+}
+
+.menu-toggle-btn .menu-btn-label {
+    font-size: 13px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #ffffff;
+    display: inline-block;
+}
+
+.menu-toggle-btn .menu-badge-extra {
+    display: none;
+    font-size: 10px;
+    font-weight: 700;
+    background: rgba(255, 255, 255, 0.12);
+    color: #f1f5f9;
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+}
+
+@media (min-width: 640px) {
+    .menu-toggle-btn .menu-badge-extra {
+        display: inline-block;
+    }
+}
+
+.menu-toggle-btn .menu-chevron-svg {
+    width: 14px;
+    height: 14px;
+    color: #ff66b2;
+    flex-shrink: 0;
+    transition: transform 0.25s ease;
+}
+
+.menu-toggle-btn.active .menu-chevron-svg {
+    transform: rotate(180deg);
+}
+
+/* 3. Agrupamento da Seção de Recursos - Grade Nativa sem Media Queries */
+.grid-recursos-nativa {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 1.5rem;
+}
+
+.card-recurso-destaque {
+    border-color: rgba(255, 0, 127, 0.35);
+    background: linear-gradient(135deg, rgba(255, 0, 127, 0.08) 0%, rgba(15, 23, 42, 0.85) 100%);
+    box-shadow: 0 0 20px rgba(255, 0, 127, 0.12);
+}
+
+/* 4. Interface de Resultado Fato ou Fake - Alto Contraste WCAG AAA Dark-Mode */
+.resultado-badge-alert {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 0.85rem;
+    padding: 1rem 1.35rem;
+    border-radius: 0.875rem;
+    font-size: 1.125rem;
+    font-weight: 800;
+    letter-spacing: 0.03em;
+    margin-bottom: 1.5rem;
+    transition: all 0.25s ease;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+}
+
+.resultado-badge-alert .resultado-badge-icone {
+    font-size: 1.35rem;
+    line-height: 1;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.resultado-badge-alert .resultado-badge-texto {
+    display: inline-flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.45rem;
+    line-height: 1.3;
+}
+
+.resultado-badge-alert .resultado-badge-veredito {
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.resultado-badge-alert .resultado-badge-plus {
+    opacity: 0.7;
+    font-weight: 600;
+}
+
+.resultado-badge-alert .resultado-badge-confianca {
+    font-weight: 700;
+    font-family: 'JetBrains Mono', monospace, sans-serif;
+}
+
+/* status-fato: 🟢 FATO + [XX]% de Confiança (Verde alto contraste WCAG AAA > 11:1) */
+.resultado-badge-alert.status-fato {
+    background-color: rgba(6, 78, 59, 0.45);
+    border: 2px solid #10b981;
+    color: #a7f3d0;
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.25);
+}
+.resultado-badge-alert.status-fato .resultado-badge-veredito {
+    color: #34d399;
+}
+.resultado-badge-alert.status-fato .resultado-badge-confianca {
+    color: #6ee7b7;
+}
+
+/* status-fake: 🔴 FAKE + [XX]% de Confiança (Vermelho alto contraste WCAG AAA > 8.5:1) */
+.resultado-badge-alert.status-fake {
+    background-color: rgba(136, 19, 55, 0.45);
+    border: 2px solid #f43f5e;
+    color: #fecdd3;
+    box-shadow: 0 0 20px rgba(244, 63, 94, 0.25);
+}
+.resultado-badge-alert.status-fake .resultado-badge-veredito {
+    color: #fb7185;
+}
+.resultado-badge-alert.status-fake .resultado-badge-confianca {
+    color: #fda4af;
+}
+
+/* status-alerta: 🟡 ALERTA / JUÍZO DE VALOR + [XX]% de Confiança (Amarelo alto contraste WCAG AAA > 12:1) */
+.resultado-badge-alert.status-alerta {
+    background-color: rgba(120, 53, 15, 0.45);
+    border: 2px solid #f59e0b;
+    color: #fef08a;
+    box-shadow: 0 0 20px rgba(245, 158, 11, 0.25);
+}
+.resultado-badge-alert.status-alerta .resultado-badge-veredito {
+    color: #fde047;
+}
+.resultado-badge-alert.status-alerta .resultado-badge-confianca {
+    color: #fef08a;
+}

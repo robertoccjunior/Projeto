@@ -1,0 +1,242 @@
+{% extends "base.html" %}
+
+{% block title %}Registrar Denúncia // ProtejaJá{% endblock %}
+
+{% block content %}
+<section class="w-full max-w-3xl mx-auto py-8">
+    <div class="text-center mb-8">
+        <span class="badge-neon-pink mb-3">Canal Cidadão Criptografado</span>
+        <h1 class="text-3xl font-extrabold text-white tracking-tight">Registrar Ocorrência</h1>
+        <p class="text-sm text-slate-400 mt-1 max-w-lg mx-auto">
+            Seus dados estão protegidos. Cada registro é submetido à análise de conformidade e verificação pelas diretrizes comunitárias.
+        </p>
+    </div>
+
+    <!-- FORMULÁRIO DE ENVIO DE DENÚNCIA -->
+    <div class="card-cyber mb-10">
+        <form method="POST" action="/denuncias" enctype="multipart/form-data" class="space-y-5" id="formDenuncia">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div>
+                <label for="denunciado" class="campo-label">Quem você está denunciando? *</label>
+                <input type="text" id="denunciado" name="denunciado" required
+                       class="campo" placeholder="Ex.: Supermercado Savegnago, Posto Shell, Loja tal, Hospital..."
+                       value="{{ request.form.get('denunciado', '') }}">
+            </div>
+
+            <!-- CIDADE E BAIRRO PARA IDENTIFICAÇÃO DA UNIDADE / FILIAL -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label for="cidadeDenuncia" class="campo-label">Cidade do Estabelecimento / Fato *</label>
+                    <select id="cidadeDenuncia" name="cidade" required class="campo">
+                        <optgroup label="Região de Araraquara">
+                            <option value="Araraquara" selected>Araraquara</option>
+                            <option value="Américo Brasiliense">Américo Brasiliense</option>
+                            <option value="Matão">Matão</option>
+                            <option value="São Carlos">São Carlos</option>
+                            <option value="Taquaritinga">Taquaritinga</option>
+                            <option value="Ibaté">Ibaté</option>
+                            <option value="Boa Esperança do Sul">Boa Esperança do Sul</option>
+                            <option value="Rincão">Rincão</option>
+                            <option value="Santa Lúcia">Santa Lúcia</option>
+                            <option value="Motuca">Motuca</option>
+                            <option value="Gavião Peixoto">Gavião Peixoto</option>
+                            <option value="Tabatinga">Tabatinga</option>
+                            <option value="Itápolis">Itápolis</option>
+                        </optgroup>
+                        <optgroup label="Região de Ribeirão Preto">
+                            <option value="Ribeirão Preto">Ribeirão Preto</option>
+                            <option value="Sertãozinho">Sertãozinho</option>
+                            <option value="Cravinhos">Cravinhos</option>
+                            <option value="Jaboticabal">Jaboticabal</option>
+                            <option value="Bebedouro">Bebedouro</option>
+                            <option value="Franca">Franca</option>
+                            <option value="Batatais">Batatais</option>
+                            <option value="Serrana">Serrana</option>
+                            <option value="Jardinópolis">Jardinópolis</option>
+                            <option value="Pontal">Pontal</option>
+                        </optgroup>
+                        <optgroup label="Outras Cidades">
+                            <option value="Araras">Araras</option>
+                            <option value="Rio Claro">Rio Claro</option>
+                            <option value="Campinas">Campinas</option>
+                            <option value="Outra Cidade (SP)">Outra Cidade (SP)</option>
+                        </optgroup>
+                    </select>
+                </div>
+
+                <div>
+                    <label for="bairroDenuncia" class="campo-label">Bairro / Unidade / Filial *</label>
+                    <input type="text" id="bairroDenuncia" name="bairro" required
+                           class="campo" placeholder="Ex.: Vila Xavier, Centro, Maurício Galli, Irajá..."
+                           value="{{ request.form.get('bairro', '') }}">
+                    <p class="text-[11px] text-slate-400 mt-1">Especifique o bairro para diferenciar unidades (ex: Savegnago da Vila Xavier vs Bento).</p>
+                </div>
+            </div>
+
+            <div id="campoOutraCidadeDenuncia" class="hidden">
+                <label for="cidade_outra_denuncia" class="campo-label">Nome da Cidade (SP) *</label>
+                <input type="text" id="cidade_outra_denuncia" name="cidade_outra"
+                       class="campo text-xs" placeholder="Digite o nome da cidade">
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="sm:col-span-2">
+                    <label for="assunto" class="campo-label">Assunto da Ocorrência *</label>
+                    <input type="text" id="assunto" name="assunto" required
+                           class="campo" placeholder="Ex.: Produto adulterado, cobrança indevida, local insalubre..."
+                           value="{{ request.form.get('assunto', '') }}">
+                </div>
+
+                <div>
+                    <label for="categoria" class="campo-label">Categoria</label>
+                    <select id="categoria" name="categoria" class="campo">
+                        <option value="Geral">Geral</option>
+                        <option value="Local">Local / Estabelecimento</option>
+                        <option value="Produto">Produto / Alimento</option>
+                        <option value="Serviço">Serviço / Atendimento</option>
+                        <option value="Segurança">Segurança / Ordem Pública</option>
+                    </select>
+                </div>
+            </div>
+
+            <div>
+                <label for="descricao" class="campo-label">Detalhamento dos Fatos *</label>
+                <textarea id="descricao" name="descricao" rows="5" required
+                          class="campo" placeholder="Descreva cronologicamente o que ocorreu, data, horário, localidade e impactos observados...">{{ request.form.get('descricao', '') }}</textarea>
+                <p class="text-[11px] text-slate-400 mt-1">
+                    * Descreva datas, horários e detalhes com clareza para facilitar a verificação da ocorrência.
+                </p>
+            </div>
+
+            <div>
+                <label for="anexo" class="campo-label">Prova Documental (Foto, Comprovante ou Vídeo)</label>
+                <input type="file" id="anexo" name="anexo" accept=".png,.jpg,.jpeg,.webp,.pdf,.mp4"
+                       class="campo-arquivo">
+                <p class="text-[11px] text-slate-400 mt-1">
+                    * <strong>Fotos Recomendadas:</strong> Fotos nítidas do produto, lote/validade, cupom fiscal, nota ou local. Fotos não recomendadas, memes ou imagens desconexas são recusadas na moderação (Máx. 5 MB).
+                </p>
+                <div id="preview-anexo" class="hidden mt-3"></div>
+            </div>
+
+            <!-- CONTRATO DE DECLARAÇÃO E RESPONSABILIDADE LEGAL (SCROLL-TO-AGREE) -->
+            <div class="contrato-card">
+                <div class="flex items-center justify-between mb-2">
+                    <span class="text-xs font-mono font-bold text-rose-400 uppercase tracking-wider flex items-center gap-1.5">
+                        Termo de Declaração de Veracidade e Responsabilidade Legal
+                    </span>
+                    <span class="text-[10px] font-mono text-slate-400">Obrigatório</span>
+                </div>
+
+                <div class="contrato-scrollbox" id="contratoScroll">
+                    <p class="mb-2 font-semibold text-rose-300">
+                        LEIA ATENTAMENTE ESTE INSTRUMENTO ANTES DE CONCLUIR SEU REGISTRO:
+                    </p>
+                    <p class="mb-2">
+                        1. <strong>Declaração de Veracidade:</strong> Ao submeter esta denúncia através da plataforma <strong>ProtejaJá</strong>, eu declaro, sob as penas do <strong>art. 299</strong> (Falsidade Ideológica) e do <strong>art. 340</strong> (Comunicação Falsa de Crime ou Contravenção) do <strong>Código Penal Brasileiro (Decreto-Lei nº 2.848/1940)</strong>, que todas as informações prestadas e eventuais documentos/mídias anexados refletem com estrita exatidão os fatos por mim vivenciados ou constatados.
+                    </p>
+                    <p class="mb-2">
+                        2. <strong>Vedação à Calúnia, Difamação e Injúria:</strong> Estou plenamente ciente de que a imputação de fato falso tipificado como crime ou de fato ofensivo à reputação de terceiros, desprovido de fundamento ou de boa-fé, enseja responsabilização civil e criminal por Calúnia (art. 138), Difamação (art. 139) e Injúria (art. 140) do Código Penal.
+                    </p>
+                    <p class="mb-2">
+                        3. <strong>Marco Civil da Internet (Lei nº 12.965/2014):</strong> Compreendo que os registros de acesso, endereço IP, carimbos de data/hora e metadados desta transação serão mantidos em sigilo e em conformidade estrita com a legislação vigente, podendo ser requisitados por autoridade judicial competente em caso de apuração de ilícitos.
+                    </p>
+                    <p class="mb-2">
+                        4. <strong>Análise de Diretrizes e Publicação (Até 24 Horas):</strong> Declaro estar ciente de que a denúncia será encaminhada para conferência prévia e verificação de provas, sendo publicada em até 24 horas caso cumpra integralmente as diretrizes comunitárias e os padrões de respeito mútuo.
+                    </p>
+                    <p>
+                        5. <strong>Conclusão e Aceite:</strong> Declaro ter lido integralmente o presente instrumento, assumindo de forma livre, expressa e irrevogável todas as responsabilidades civis, administrativas e criminais decorrentes do envio deste relato.
+                    </p>
+                </div>
+
+                <div id="avisoScroll" class="contrato-aviso-scroll">
+                    <span>Role o texto até o final para desbloquear a confirmação de responsabilidade.</span>
+                </div>
+
+                <div class="mt-4 pt-3 border-t border-slate-800/80 flex items-start gap-3 opacity-50 pointer-events-none transition-opacity duration-300" id="checkWrapper">
+                    <input type="checkbox" id="checkTermo" name="termo_responsabilidade" value="1" disabled class="checkbox-cyber mt-0.5">
+                    <label for="checkTermo" class="text-xs text-slate-300 leading-snug cursor-pointer select-none">
+                        <strong>Confirmo e concordo integralmente</strong> com o Termo de Declaração de Veracidade e Responsabilidade Legal, atestando a autenticidade dos fatos narrados.
+                    </label>
+                </div>
+            </div>
+
+            <!-- BOTÃO DE SUBMISSÃO -->
+            <button type="submit" id="btnEnviarDenuncia" disabled
+                    class="btn-grande w-full opacity-50 cursor-not-allowed transition-all font-bold tracking-wide">
+                Concordar e Enviar Denúncia
+            </button>
+        </form>
+    </div>
+
+    <!-- LISTAGEM DE DENÚNCIAS DO USUÁRIO -->
+    <div class="card-cyber">
+        <div class="flex items-center justify-between mb-6 pb-3 border-b border-slate-800">
+            <div>
+                <h2 class="text-xl font-bold text-white">Minhas Ocorrências</h2>
+                <p class="text-xs text-slate-400">Acompanhe a análise da sua denúncia (prazo de até 24 horas).</p>
+            </div>
+            <span class="text-xs font-mono text-rose-400 bg-rose-500/10 px-3 py-1 rounded-full border border-rose-500/30">
+                {{ denuncias|length }} registros
+            </span>
+        </div>
+
+        {% if denuncias %}
+            <div class="space-y-4">
+                {% for d in denuncias %}
+                    <article class="p-4 rounded-xl bg-slate-900/60 border border-slate-800 hover:border-rose-500/30 transition-colors">
+                        <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
+                            <div class="flex items-center gap-2">
+                                <span class="badge-neon-pink">{{ d.categoria }}</span>
+                                {% if d.status == 'EM_ANALISE_IA' %}
+                                    <span class="badge-status-ia status-analise">Em Análise (Até 24h)</span>
+                                {% elif d.status == 'ALERTA_REVISAO_MANUAL' %}
+                                    <span class="badge-status-ia status-alerta">Em Análise Especial</span>
+                                {% elif d.status == 'APROVADO' %}
+                                    <span class="badge-status-ia status-aprovado">Aprovada e Publicada</span>
+                                {% elif d.status == 'REPROVADO' %}
+                                    <span class="badge-status-ia status-reprovado">Não Aprovada</span>
+                                {% else %}
+                                    <span class="badge-status-ia status-analise">Em Análise (Até 24h)</span>
+                                {% endif %}
+                            </div>
+                            <span class="text-xs font-mono text-slate-400">{{ d.criado_em }}</span>
+                        </div>
+
+                        <h3 class="text-base font-bold text-white mb-1">
+                            Empresa: {{ d.denunciado }} &bull; <span class="text-rose-400 font-mono text-xs">Local: {{ d.cidade }} (Bairro: {{ d.bairro }})</span>
+                        </h3>
+                        <div class="text-sm font-semibold text-slate-300 mb-1">{{ d.assunto }}</div>
+                        <p class="text-sm text-slate-400 line-clamp-2 mb-3">{{ d.descricao }}</p>
+
+                        {% if d.justificativa_ia %}
+                            <div class="text-xs font-mono p-2.5 rounded-lg bg-slate-950/70 border border-slate-800 text-slate-300 mb-3">
+                                <span class="text-rose-400 font-bold">Observação da Moderação:</span> {{ d.justificativa_ia }}
+                            </div>
+                        {% endif %}
+
+                        <div class="flex items-center justify-between pt-2 border-t border-slate-800/60 text-xs">
+                            {% if d.anexo %}
+                                <a href="/uploads/{{ d.anexo }}" target="_blank"
+                                   class="text-rose-400 hover:text-rose-300 flex items-center gap-1 font-mono">
+                                    Ver Anexo Documental
+                                </a>
+                            {% else %}
+                                <span class="text-slate-400 italic">Sem anexo de mídia</span>
+                            {% endif %}
+
+                            <a href="/denuncias/{{ d.id }}" class="btn-cyber-outline btn-pequeno">
+                                Ver Detalhes
+                            </a>
+                        </div>
+                    </article>
+                {% endfor %}
+            </div>
+        {% else %}
+            <div class="text-center py-10 text-slate-400">
+                <p>Nenhuma denúncia cadastrada por você até o momento.</p>
+                <p class="text-xs text-slate-400 mt-1">Preencha o formulário acima para registrar sua primeira ocorrência.</p>
+            </div>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

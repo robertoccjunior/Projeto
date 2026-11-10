@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}Recuperar Senha // ProtejaJá{% endblock %}
+
+{% block content %}
+<section class="w-full max-w-md mx-auto py-10">
+    <div class="card-cyber">
+        <div class="text-center mb-6">
+            <span class="badge-neon-pink mb-2">Redefinição de Credenciais</span>
+            <h1 class="text-2xl font-extrabold text-white">Recuperar Acesso</h1>
+            <p class="text-xs text-slate-400 mt-1">Informe seu e-mail e data de nascimento para gerar uma senha temporária.</p>
+        </div>
+
+        {% if senha_temporaria %}
+            <div class="p-4 rounded-xl bg-rose-500/10 border border-rose-500/40 text-center mb-6">
+                <span class="text-xs font-mono text-rose-300 block mb-1">NOVA SENHA GERADA PARA: {{ senha_temporaria[0] }}</span>
+                <code class="text-xl font-bold font-mono text-white tracking-widest bg-slate-900 px-3 py-1 rounded inline-block select-all my-2">
+                    {{ senha_temporaria[1] }}
+                </code>
+                <p class="text-[11px] text-slate-400">
+                    Copie a senha acima e acesse sua conta imediatamente.
+                </p>
+                <a href="/login" class="btn-cyber-primary btn-pequeno mt-3 inline-block">Ir para o Login</a>
+            </div>
+        {% else %}
+            <form method="POST" action="/recuperar" class="space-y-4">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                <div>
+                    <label for="email" class="campo-label">E-mail Cadastrado</label>
+                    <input type="email" id="email" name="email" required autocomplete="email"
+                           class="campo" placeholder="voce@exemplo.com" value="{{ request.form.get('email', '') }}">
+                </div>
+
+                <div>
+                    <label for="data_nascimento" class="campo-label">Data de Nascimento</label>
+                    <input type="date" id="data_nascimento" name="data_nascimento" required
+                           class="campo" value="{{ request.form.get('data_nascimento', '') }}">
+                </div>
+
+                <button type="submit" class="btn-cyber-primary btn-grande w-full mt-2 font-bold">
+                    Gerar Senha Temporária
+                </button>
+            </form>
+        {% endif %}
+
+        <div class="mt-6 pt-4 border-t border-slate-800 text-center text-xs">
+            <a href="/login" class="text-rose-400 hover:text-rose-300 font-semibold underline">Voltar para o Login</a>
+        </div>
+    </div>
+</section>
+{% endblock %}

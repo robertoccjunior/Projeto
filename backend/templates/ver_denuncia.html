@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block title %}Protocolo #{{ denuncia.id }} // ProtejaJá{% endblock %}
+
+{% block content %}
+<section class="w-full max-w-2xl mx-auto py-8">
+    <div class="mb-6 flex items-center justify-between text-xs font-mono">
+        <a href="/denuncias" class="text-rose-400 hover:text-rose-300 flex items-center gap-1">
+            &larr; Voltar para Minhas Denúncias
+        </a>
+        <span class="text-slate-400">Protocolo de Registro #{{ denuncia.id }}</span>
+    </div>
+
+    <article class="card-cyber mb-6">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-4 pb-3 border-b border-slate-800">
+            <div class="flex items-center gap-2">
+                <span class="badge-neon-pink">{{ denuncia.categoria }}</span>
+                {% if denuncia.status == 'EM_ANALISE_IA' %}
+                    <span class="badge-status-ia status-analise">Em Auditoria Automatizada</span>
+                {% elif denuncia.status == 'ALERTA_REVISAO_MANUAL' %}
+                    <span class="badge-status-ia status-alerta">Sob Auditoria Humana</span>
+                {% elif denuncia.status == 'APROVADO' %}
+                    <span class="badge-status-ia status-aprovado">Aprovada & Pública</span>
+                {% elif denuncia.status == 'REPROVADO' %}
+                    <span class="badge-status-ia status-reprovado">Reprovada</span>
+                {% else %}
+                    <span class="badge-status-ia status-analise">{{ denuncia.status }}</span>
+                {% endif %}
+            </div>
+            <span class="text-xs font-mono text-slate-400">{{ denuncia.criado_em }}</span>
+        </div>
+
+        <div class="text-xs font-mono text-rose-400 uppercase tracking-wider mb-1">Denunciado / Unidade e Localidade</div>
+        <h1 class="text-2xl font-extrabold text-white mb-1">Empresa: {{ denuncia.denunciado }} &bull; <span class="text-rose-400 font-mono text-base font-semibold">Local: {{ denuncia.cidade }} ({{ denuncia.bairro }})</span></h1>
+        <div class="text-base font-bold text-slate-300 mb-4">{{ denuncia.assunto }}</div>
+
+        <div class="p-4 rounded-xl bg-slate-950/60 border border-slate-800 text-slate-300 text-sm leading-relaxed whitespace-pre-line mb-6">
+            {{ denuncia.descricao }}
+        </div>
+
+        <!-- PARECER DE MODERAÇÃO -->
+        {% if denuncia.justificativa_ia or denuncia.score_confianca is not none %}
+            <div class="p-3.5 rounded-xl bg-slate-950/90 border border-slate-800 mb-6 font-mono text-xs">
+                <div class="text-rose-400 font-bold mb-2">
+                    Parecer da Moderação Interna:
+                </div>
+                {% if denuncia.score_confianca is not none %}
+                    <div class="mb-2">
+                        <span class="text-slate-400">Índice de Conformidade:</span>
+                        <strong class="text-white">{{ (denuncia.score_confianca * 100)|round|int }}%</strong>
+                    </div>
+                {% endif %}
+                {% if denuncia.justificativa_ia %}
+                    <p class="text-slate-300">{{ denuncia.justificativa_ia }}</p>
+                {% endif %}
+            </div>
+        {% endif %}
+
+        <!-- PROVA ANEXADA -->
+        {% if denuncia.anexo %}
+            <div class="border-t border-slate-800 pt-4">
+                <div class="text-xs font-mono font-bold text-slate-300 mb-2">Prova Documental Anexada</div>
+                <a href="/uploads/{{ denuncia.anexo }}" target="_blank"
+                   class="btn-cyber-primary btn-grande w-full text-center inline-flex items-center justify-center gap-2">
+                    Abrir Documento / Imagem ({{ denuncia.anexo }})
+                </a>
+                <p class="text-[11px] text-slate-400 mt-2 text-center">Arquivo preservado com hash seguro no repositório local.</p>
+            </div>
+        {% else %}
+            <div class="border-t border-slate-800 pt-4 text-xs font-mono text-slate-400 text-center">
+                Sem arquivo comprobatório anexado neste protocolo.
+            </div>
+        {% endif %}
+    </article>
+
+    <div class="flex gap-4">
+        <a href="/denuncias" class="btn-cyber-outline btn-grande flex-1 text-center">Voltar para a Lista</a>
+        <a href="/denuncias" class="btn-cyber-primary btn-grande flex-1 text-center">Nova Ocorrência</a>
+    </div>
+</section>
+{% endblock %}

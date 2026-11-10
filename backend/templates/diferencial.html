@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+
+{% block title %}Diferencial Tecnológico // ProtejaJá{% endblock %}
+{% block description %}Conheça a arquitetura diferenciada do ProtejaJá: moderação em até 24h, sigilo de dados do denunciante, foco no comércio regional e central de telefones de emergência.{% endblock %}
+
+{% block content %}
+<section class="w-full max-w-4xl mx-auto py-8">
+    <div class="text-center mb-10">
+        <span class="badge-neon-pink mb-3">Vanguarda em Engenharia & Cidadania</span>
+        <h1 class="text-3xl sm:text-5xl font-extrabold text-white tracking-tight mb-4">
+            Por que o Proteja<span class="text-rose-500 brand-glow">JÁ</span> é Único?
+        </h1>
+        <p class="text-sm sm:text-base text-slate-300 max-w-2xl mx-auto">
+            Ao contrário de plataformas genéricas de reclamações, o ProtejaJá foi arquitetado para unir seriedade jurídica, moderação criteriosa em até 24h e proteção ao cidadão.
+        </p>
+    </div>
+
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-10">
+        <article class="card-cyber">
+            <span class="badge-neon-pink mb-3 inline-block">Moderação Responsável</span>
+            <h2 class="text-lg font-bold text-white mb-2">Análise de Diretrizes e Publicação em até 24h</h2>
+            <p class="text-sm text-slate-400 leading-relaxed">
+                Plataformas convencionais publicam acusações sem checagem prévia. No ProtejaJá, todas as ocorrências passam por criteriosa análise de conformidade antes de serem publicadas, prevenindo abusos e garantindo credibilidade.
+            </p>
+        </article>
+
+        <article class="card-cyber">
+            <span class="badge-status-ia status-aprovado mb-3 inline-block">Utilidade Pública</span>
+            <h2 class="text-lg font-bold text-white mb-2">Central Cívica & Telefones Úteis</h2>
+            <p class="text-sm text-slate-400 leading-relaxed">
+                Integração direta com os números de emergência e apoio ao cidadão: Polícia Militar (190), Bombeiros (193), SAMU (192), Procon SP (151) e Defesa Civil (199).
+            </p>
+        </article>
+
+        <article class="card-cyber">
+            <span class="badge-status-ia status-alerta mb-3 inline-block">Auditoria</span>
+            <h2 class="text-lg font-bold text-white mb-2">Materialidade & Auditoria de Provas</h2>
+            <p class="text-sm text-slate-400 leading-relaxed">
+                Não aceitamos acusações sem respaldo. O sistema exige ou incentiva o anexo de imagem, vídeo ou comprovante em PDF com armazenamento isolado e criptografado contra adulterações.
+            </p>
+        </article>
+
+        <article class="card-cyber">
+            <span class="badge-neon-pink mb-3 inline-block">Segurança</span>
+            <h2 class="text-lg font-bold text-white mb-2">Blindagem de Privacidade Cidadã</h2>
+            <p class="text-sm text-slate-400 leading-relaxed">
+                Em sites comuns, seus dados pessoais podem ficar expostos a retaliações. Aqui, o autor da denúncia tem sua identidade preservada sob rigorosa conformidade com a LGPD.
+            </p>
+        </article>
+    </div>
+
+    <!-- CARD DE COMPROMISSO SOCIAL E EDUCATIVO -->
+    <div class="card-cyber mb-10 border-rose-500/40 bg-gradient-to-br from-slate-900 via-slate-900 to-rose-950/30">
+        <h2 class="text-lg font-bold text-white mb-2">Propósito Educativo e Letramento Digital</h2>
+        <p class="text-sm text-slate-300 leading-relaxed">
+            O ProtejaJá nasceu com o propósito de formar cidadãos conscientes no ambiente digital. Denunciar é um ato de responsabilidade cívica que deve ser feito com embasamento fático, provas documentais e sem agressões verbais.
+        </p>
+    </div>
+
+    <div class="text-center">
+        {% if user %}
+            <a href="/denuncias" class="btn-cyber-primary btn-grande">
+                Registrar Nova Denúncia
+            </a>
+            <a href="/denuncias-publicas" class="btn-cyber-outline btn-grande ml-2">
+                Ver Denúncias Aprovadas
+            </a>
+        {% else %}
+            <a href="/denuncias" class="btn-cyber-primary btn-grande">
+                Fazer Denúncia
+            </a>
+            <a href="/denuncias-publicas" class="btn-cyber-outline btn-grande ml-2">
+                Ver Denúncias Aprovadas
+            </a>
+        {% endif %}
+    </div>
+</section>
+{% endblock %}

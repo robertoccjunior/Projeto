@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Wireframes — ProtejaJA</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: Arial, Helvetica, sans-serif; background: #f5f5f5; color: #1a1a1a; padding: 24px; }
+  h1 { font-size: 24px; margin-bottom: 4px; }
+  .sub { color: #555; margin-bottom: 24px; font-size: 14px; }
+  .screen { background: #fff; border: 1px solid #bbb; border-radius: 8px; max-width: 860px;
+            margin: 0 auto 36px; padding: 16px; box-shadow: 0 2px 6px rgba(0,0,0,.08); }
+  .screen-title { background: #e8e8e8; border-radius: 6px; padding: 10px 12px; margin-bottom: 14px;
+                  font-weight: bold; font-size: 15px; display: flex; justify-content: space-between; }
+  .screen-title small { font-weight: normal; color: #666; }
+  .note { background: #fff8d6; border: 1px dashed #c9a800; border-radius: 6px; padding: 8px 10px;
+          font-size: 12px; margin-bottom: 12px; color: #6b5900; }
+
+  /* Elementos do wireframe */
+  .wf-nav { border: 2px solid #3a3a3a; border-radius: 6px; padding: 8px 12px; display: flex;
+            align-items: center; gap: 14px; margin-bottom: 14px; background: #fafafa; }
+  .wf-logo { border: 1.5px solid #3a3a3a; background: #fff; padding: 4px 12px; font-size: 13px; font-weight: bold; }
+  .wf-links { margin-left: auto; display: flex; gap: 16px; font-size: 12px; color: #333; }
+  .wf-links .link { text-decoration: underline; }
+  .wf-spacer { flex: 1; }
+  .wf-btn { border: 1.5px solid #3a3a3a; border-radius: 4px; padding: 6px 14px; font-size: 12px;
+            background: #fff; display: inline-block; }
+  .wf-btn-dark { background: #2a2a2a; color: #fff; }
+  .wf-box { border: 1.5px dashed #888; border-radius: 6px; padding: 14px; background: #fff; }
+  .wf-label { font-size: 11px; color: #666; margin: 10px 0 4px; }
+  .wf-field { border: 1.5px solid #3a3a3a; border-radius: 4px; height: 30px; background: #fff;
+              margin-bottom: 10px; display: flex; align-items: center; padding: 0 10px; font-size: 11px; color: #999; }
+  .wf-textarea { border: 1.5px solid #3a3a3a; border-radius: 4px; height: 80px; background: #fff;
+                 margin-bottom: 10px; display: flex; align-items: flex-start; padding: 8px 10px; font-size: 11px; color: #999; }
+  .wf-select { border: 1.5px solid #3a3a3a; border-radius: 4px; height: 30px; background: #fff;
+               display: flex; align-items: center; justify-content: space-between; padding: 0 10px; font-size: 11px;
+               margin-bottom: 10px; }
+  .wf-select .seta { color: #666; }
+  .wf-file { border: 1.5px dashed #3a3a3a; border-radius: 4px; height: 36px; background: #fff;
+             display: flex; align-items: center; justify-content: center; font-size: 11px; color: #555; margin-bottom: 6px; }
+  .wf-center { text-align: center; }
+  .wf-title-big { font-size: 26px; font-weight: bold; text-align: center; margin: 18px 0 6px; }
+  .wf-title { font-size: 18px; font-weight: bold; text-align: center; margin: 4px 0; }
+  .wf-paragraph { font-size: 12px; color: #444; text-align: center; max-width: 460px; margin: 6px auto; }
+  .wf-cards { display: flex; gap: 12px; justify-content: center; margin: 16px 0; }
+  .wf-card { border: 1.5px dashed #888; border-radius: 6px; padding: 12px; width: 150px; text-align: center; font-size: 11px; }
+  .wf-card .icone { font-size: 20px; margin-bottom: 4px; color: #444; }
+  .wf-row { display: flex; gap: 12px; }
+  .wf-col { flex: 1; }
+  .wf-card-center { max-width: 400px; margin: 0 auto; border: 2px solid #3a3a3a; border-radius: 8px;
+                    padding: 18px; background: #fff; }
+  .wf-img-ph { border: 1.5px dashed #8a8a8a; background: repeating-linear-gradient(45deg,#eee,#eee 8px,#dcdcdc 8px,#dcdcdc 16px);
+               height: 60px; display: flex; align-items: center; justify-content: center; font-size: 11px; color: #777; margin-bottom: 10px; }
+  .wf-item { border: 1.5px solid #c5c5c5; border-radius: 6px; padding: 10px; margin-bottom: 8px; background: #fff; }
+  .wf-item .linha1 { display: flex; justify-content: space-between; font-size: 10px; color: #555; margin-bottom: 4px; }
+  .wf-badge { border: 1px solid #3a3a3a; border-radius: 3px; padding: 1px 8px; font-size: 9px; }
+  .wf-title-list { font-size: 13px; font-weight: bold; margin: 14px 0 8px; }
+  .full-h { min-height: 120px; display: flex; flex-direction: column; justify-content: center; }
+
+  @media print {
+    body { background: #fff; padding: 0; }
+    h1, .sub { text-align: left; }
+    .screen { box-shadow: none; max-width: 100%; page-break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<h1>Wireframe — ProtejaJA</h1>
+<p class="sub">Esboço das telas (visualização antes da programação) — 5 telas</p>
+
+<!-- ============ TELA 1: HOME ============ -->
+<div class="screen">
+  <div class="screen-title">Tela 1 — Home (página inicial) <small>é o que o visitante vê primeiro</small></div>
+
+  <div class="wf-nav">
+    <div class="wf-logo">ProtejaJA</div>
+    <div class="wf-links"><span class="link">Home</span><span class="link">Entrar</span></div>
+    <div class="wf-spacer"></div>
+    <span class="wf-btn wf-btn-dark">Cadastrar</span>
+  </div>
+
+  <div class="wf-box full-h">
+    <div class="wf-title-big">ProtejaJA</div>
+    <p class="wf-paragraph">Plataforma para registrar denúncias com segurança. Título de exemplo: "Plataforma para registrar denúncias com segurança."</p>
+
+    <div class="wf-cards">
+      <div class="wf-card"><div class="icone">#</div>Senha<br>criptografada</div>
+      <div class="wf-card"><div class="icone">#</div>Filtro<br>antiofensa</div>
+      <div class="wf-card"><div class="icone">#</div>Anexo<br>de prova</div>
+    </div>
+
+    <div class="wf-center">
+      <span class="wf-btn wf-btn-dark">Criar conta</span>&nbsp;&nbsp;&nbsp;
+      <span class="wf-btn">Entrar</span>
+    </div>
+  </div>
+</div>
+
+<!-- ============ TELA 2: CADASTRO ============ -->
+<div class="screen">
+  <div class="screen-title">Tela 2 — Cadastro <small>formulário no centro da tela</small></div>
+
+  <div class="wf-nav">
+    <div class="wf-logo">ProtejaJA</div>
+    <div class="wf-links"><span class="link">Home</span><span class="link">Entrar</span></div>
+    <div class="wf-spacer"></div>
+    <span class="wf-btn wf-btn-dark">Cadastrar</span>
+  </div>
+
+  <div class="wf-card-center">
+    <div class="wf-title">Criar conta</div>
+    <p class="wf-paragraph" style="margin:2px 0 12px;">Preencha seus dados</p>
+
+    <div class="wf-label">Nome completo *</div>
+    <div class="wf-field">Digite seu nome completo</div>
+
+    <div class="wf-label">E-mail *</div>
+    <div class="wf-field">voce@exemplo.com</div>
+
+    <div class="wf-row">
+      <div class="wf-col">
+        <div class="wf-label">Data de nascimento *</div>
+        <div class="wf-field">dd/mm/aaaa</div>
+      </div>
+      <div class="wf-col">
+        <div class="wf-label">Cidade *</div>
+        <div class="wf-field">Sua cidade</div>
+      </div>
+    </div>
+
+    <div class="wf-label">Senha *</div>
+    <div class="wf-field">••••••••</div>
+
+    <div class="wf-label">Endereço completo *</div>
+    <div class="wf-field">Rua, número, bairro, CEP</div>
+
+    <div class="wf-center" style="margin-top:12px;">
+      <span class="wf-btn wf-btn-dark" style="width:100%; text-align:center;">Cadastrar</span>
+    </div>
+    <p class="wf-paragraph" style="font-size:11px;">Já tem conta? <u>Entrar</u></p>
+  </div>
+</div>
+
+<!-- ============ TELA 3: LOGIN ============ -->
+<div class="screen">
+  <div class="screen-title">Tela 3 — Login <small>entrada com e-mail e senha</small></div>
+
+  <div class="wf-nav">
+    <div class="wf-logo">ProtejaJA</div>
+    <div class="wf-links"><span class="link">Home</span><span class="link">Entrar</span></div>
+    <div class="wf-spacer"></div>
+    <span class="wf-btn wf-btn-dark">Cadastrar</span>
+  </div>
+
+  <div class="wf-card-center">
+    <div class="wf-title">Entrar</div>
+    <p class="wf-paragraph" style="margin:2px 0 12px;">Acesse sua conta</p>
+
+    <div class="wf-label">E-mail *</div>
+    <div class="wf-field">voce@exemplo.com</div>
+
+    <div class="wf-label">Senha *</div>
+    <div class="wf-field">••••••••</div>
+
+    <div class="wf-center" style="margin-top:12px;">
+      <span class="wf-btn wf-btn-dark" style="width:100%; text-align:center;">Entrar</span>
+    </div>
+    <p class="wf-paragraph" style="font-size:11px;">Esqueceu a senha? <u><b>Recuperar senha</b></u></p>
+    <p class="wf-paragraph" style="font-size:11px;">Não tem conta? <u>Cadastre-se</u></p>
+  </div>
+</div>
+
+<!-- ============ TELA 4: RECUPERAR ============ -->
+<div class="screen">
+  <div class="screen-title">Tela 4 — Recuperar senha <small>valida e-mail + data de nascimento</small></div>
+
+  <div class="wf-nav">
+    <div class="wf-logo">ProtejaJA</div>
+  </div>
+
+  <div class="wf-card-center">
+    <div class="wf-title">Recuperar senha</div>
+    <p class="wf-paragraph" style="margin:2px 0 12px;">Geramos uma senha temporária</p>
+
+    <div class="wf-label">E-mail cadastrado *</div>
+    <div class="wf-field">voce@exemplo.com</div>
+
+    <div class="wf-label">Data de nascimento *</div>
+    <div class="wf-field">dd/mm/aaaa</div>
+
+    <div class="wf-center" style="margin-top:12px;">
+      <span class="wf-btn wf-btn-dark" style="width:100%; text-align:center;">Gerar senha temporária</span>
+    </div>
+    <p class="wf-paragraph" style="font-size:11px;">Resultado: mostra a senha temporária na tela.</p>
+  </div>
+</div>
+
+<!-- ============ TELA 5: DENÚNCIAS ============ -->
+<div class="screen">
+  <div class="screen-title">Tela 5 — Denúncias <small>a tela mais importante</small></div>
+
+  <div class="wf-nav">
+    <div class="wf-logo">ProtejaJA</div>
+    <div class="wf-links"><span class="link">Home</span><span class="link">Minhas denúncias</span><span>Olá, Aline</span></div>
+    <div class="wf-spacer"></div>
+    <span class="wf-btn wf-btn-dark">Sair</span>
+  </div>
+
+  <div class="wf-box">
+    <div class="wf-title" style="text-align:left; font-size:15px;">Enviar denúncia</div>
+
+    <div class="wf-label">Quem você está denunciando? *</div>
+    <div class="wf-field">Ex.: Savegnago</div>
+
+    <div class="wf-label">Sobre o quê? *</div>
+    <div class="wf-field">Ex.: produto vencido</div>
+
+    <div class="wf-label">Categoria</div>
+    <div class="wf-select">Produto <span class="seta">▾</span></div>
+
+    <div class="wf-label">Descrição *</div>
+    <div class="wf-textarea">Comprei um produto vencido e não quiseram trocar...</div>
+
+    <div class="wf-label">Prova (imagem, PDF ou vídeo)</div>
+    <div class="wf-file">+ Escolher arquivo (máx. 5 MB)</div>
+
+    <div class="wf-center" style="margin-top:10px;">
+      <span class="wf-btn wf-btn-dark" style="width:100%; text-align:center;">Enviar denúncia</span>
+    </div>
+  </div>
+
+  <div class="wf-title-list">Minhas denúncias</div>
+  <div class="wf-item">
+    <div class="linha1"><span class="wf-badge">Produto</span><span>12/09/2026</span></div>
+    <b>Savegnago — Produto vencido</b><br>
+    <span style="font-size:11px; color:#444;">Comprei um produto vencido e não quiseram trocar...</span>
+    <div style="font-size:11px; margin-top:4px; text-decoration:underline;">Ver anexo (prova)</div>
+  </div>
+  <div class="wf-item">
+    <div class="linha1"><span class="wf-badge">Local</span><span>11/09/2026</span></div>
+    <b>Padaria X — Falta de higiene</b><br>
+    <span style="font-size:11px; color:#444;">Local sem limpeza adequada...</span>
+  </div>
+</div>
+
+<!-- ============ INSTRUÇÕES ============ -->
+<div class="screen" style="background:#fdfdfd;">
+  <div class="screen-title">Como entregar ao professor <small>3 formas</small></div>
+  <div class="note"><b>1. Mostrar na tela:</b> basta manter esta página aberta.</div>
+  <div class="note"><b>2. Imprimir:</b> Ctrl + P e escolha "Salvar como PDF" — vira um arquivo PDF com todos os esboços.</div>
+  <div class="note"><b>3. Editar:</b> este arquivo é HTML normal, todo texto pode ser alterado no VS Code.</div>
+</div>
+
+</body>
+</html>

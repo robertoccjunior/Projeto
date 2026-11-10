@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block title %}Acesso Seguro // ProtejaJá{% endblock %}
+
+{% block content %}
+<section class="w-full max-w-md mx-auto py-10">
+    <div class="card-cyber">
+        <div class="text-center mb-6">
+            <span class="badge-neon-pink mb-2">Autenticação Segura</span>
+            <h1 class="text-2xl font-extrabold text-white">Acessar Conta</h1>
+            <p class="text-xs text-slate-400 mt-1">Insira suas credenciais para gerenciar suas denúncias.</p>
+        </div>
+
+        <form method="POST" action="/login" class="space-y-4">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <div>
+                <label for="email" class="campo-label">E-mail Cadastrado</label>
+                <input type="email" id="email" name="email" required autocomplete="email"
+                       class="campo" placeholder="seu.email@exemplo.com" value="{{ request.form.get('email', '') }}">
+            </div>
+
+            <div>
+                <label for="senha" class="campo-label">Senha</label>
+                <input type="password" id="senha" name="senha" required autocomplete="current-password"
+                       class="campo" placeholder="Sua senha secreta">
+            </div>
+
+            <button type="submit" class="btn-cyber-primary btn-grande w-full mt-2 font-bold">
+                Entrar na Plataforma
+            </button>
+        </form>
+
+        <div class="mt-6 pt-4 border-t border-slate-800 text-center text-xs space-y-2">
+            <p class="text-slate-400">
+                Esqueceu sua senha?
+                <a href="/recuperar" class="text-rose-400 hover:text-rose-300 font-semibold underline">Recuperar acesso</a>
+            </p>
+            <p class="text-slate-400">
+                Ainda não tem cadastro?
+                <a href="/cadastro" class="text-rose-400 hover:text-rose-300 font-semibold">Cadastre-se gratuitamente</a>
+            </p>
+        </div>
+    </div>
+</section>
+{% endblock %}
