@@ -384,6 +384,11 @@ def create_app():
     def index():
         return redirect(url_for("home"))
 
+    @app.route("/actuator/health")
+    @app.route("/health")
+    def health_check():
+        return jsonify({"status": "UP"}), 200
+
     @app.route("/home")
     def home():
         rows = db.denuncias_aprovadas(limite=50)

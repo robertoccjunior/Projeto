@@ -1,0 +1,59 @@
+name: Deploy ProtejaJÁ para Amazon EKS
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+env:
+  AWS_REGION: us-east-2
+  EKS_CLUSTER_NAME: cluster-app-senac-aws
+  ECR_REPOSITORY: hello-aws-service
+
+jobs:
+  deploy:
+    name: Build Docker e Deploy no EKS
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout do repositório
+        uses: actions/checkout@v4
+
+      - name: Configurar credenciais AWS (admin-cli)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Login no Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Build e Push da imagem Docker para o ECR
+        id: build-image
+        env:
+          ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          IMAGE_TAG: ${{ github.sha }}
+        run: |
+          docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -t $ECR_REGISTRY/$ECR_REPOSITORY:latest .
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
+          echo "image=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG" >> $GITHUB_OUTPUT
+
+      - name: Atualizar kubeconfig do EKS
+        run: |
+          aws eks update-kubeconfig --region ${{ env.AWS_REGION }} --name ${{ env.EKS_CLUSTER_NAME }}
+
+      - name: Aplicar Deployment e Service (NodePort 30080) no EKS
+        run: |
+          sed -i "s|IMAGE_PLACEHOLDER|${{ steps.build-image.outputs.image }}|g" k8s/deployment.yaml
+          kubectl apply -f k8s/deployment.yaml
+          kubectl rollout status deployment/protejaja-app --timeout=180s
+
+      - name: Exibir URL pública do Load Balancer (ALB)
+        run: |
+          echo "=== URLs públicas do Load Balancer na AWS ==="
+          aws elbv2 describe-load-balancers --region ${{ env.AWS_REGION }} --query "LoadBalancers[*].DNSName" --output text
+          kubectl get pods,svc -o wide
