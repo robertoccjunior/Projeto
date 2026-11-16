@@ -17,7 +17,7 @@ Na sprint atual, o ProtejaJA consolidou sua maturidade técnica com foco em conf
 
 ## 1. Visão Geral
 
-**ProtejaJA** é uma plataforma comunitária de utilidade pública para registro e fiscalização de ocorrências contra estabelecimentos, produtos e serviços em municípios paulistas (com foco nas regiões de Araraquara, São Carlos e Ribeirão Preto), além de dispor de canal de checagem contra boatos em tempo real.
+**ProtejaJA** é uma plataforma comunitária de utilidade pública com **abrangência nacional (todos os 5.570 municípios do Brasil)** para registro e fiscalização de ocorrências contra estabelecimentos, produtos e serviços, além de dispor de canal de checagem contra boatos em tempo real.
 
 - **Autor da denúncia:** usuário cidadão autenticado.
 - **Autor do fato denunciado:** estabelecimento comercial, empresa ou prestador de serviços.
@@ -107,12 +107,12 @@ Denúncia passa a 'APROVADO' e é disponibilizada no Feed Público
 ### 3.8 Feed Público de Ocorrências Auditadas
 - Acesso aberto via `/denuncias-publicas` sem exigir autenticação.
 - Exibe exclusivamente relatos previamente **aprovados** pelo administrador.
-- Busca por texto e filtragem por tags temáticas com dados estruturados Schema.org (`NewsArticle`).
+- Busca por texto, autocomplete nacional de municípios (`/api/municipios`) e filtragem por tags temáticas com dados estruturados Schema.org (`NewsArticle`).
 
 ### 3.9 Checagem de Fatos em Tempo Real (Fato ou Fake com RAG)
 - Página `/fato-ou-fake` e endpoint de API `/api/v1/checar-fato`.
-- Permite digitar o boato suspeito ou gravar/enviar um áudio de WhatsApp.
-- O motor RAG (`backend/rag_engine.py`) consulta uma base de fatos em SQLite com índice FTS5 contendo notas oficiais de Banco Central, Receita Federal, Anvisa, Procon e Ministério da Saúde, emitindo veredito (VERDADEIRO, FALSO, ALERTA DE GOLPE), nível de confiança e lista de fontes verificadas.
+- Permite colar o texto do boato, informar o **link de uma notícia** (com extração automática de título e conteúdo) ou enviar uma **imagem / print** (com campo de legenda para auditoria).
+- O motor RAG (`backend/rag_engine.py`) consulta uma base de fatos em SQLite com índice FTS5 contendo notas oficiais de Banco Central, Receita Federal, Anvisa, Procon e Ministério da Saúde, emitindo veredito (FATO, FAKE, ALERTA), nível de confiança e lista de fontes verificadas.
 
 ### 3.10 Barra Fixa de Discagem Rápida de Emergência (24h)
 - Barra de utilidade pública presente em todas as páginas com links diretos `tel:`:

@@ -72,7 +72,6 @@
                         <line x1="3" y1="18" x2="21" y2="18"></line>
                     </svg>
                     <span class="menu-btn-label">MENU</span>
-                    <span class="menu-badge-extra">Opções</span>
                     <svg class="menu-chevron-svg" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true" focusable="false">
                         <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
                     </svg>
@@ -82,7 +81,7 @@
             <!-- CENTRO: LOGO PROTEJAJÁ CENTRALIZADO COM ESCUDO VETORIAL -->
             <div class="header-logo-center">
                 <a href="/home" class="flex items-center gap-1.5 sm:gap-2 group focus:outline-none" aria-label="ProtejaJá - Página Inicial">
-                    <svg class="w-6 h-6 sm:w-8 sm:h-8 text-rose-500 flex-shrink-0 drop-shadow-[0_0_12px_rgba(255,0,127,0.7)]" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <svg width="28" height="28" class="w-8 h-8 text-rose-500 flex-shrink-0 drop-shadow-[0_0_12px_rgba(255,0,127,0.7)]" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
                         <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 2.18l7 3.11v5.71c0 4.67-3.13 8.96-7 10-3.87-1.04-7-5.33-7-10V6.29l7-3.11z"/>
                         <path d="M11 7h2v6h-2zm0 8h2v2h-2z" fill="#ffffff"/>
                     </svg>
@@ -92,12 +91,34 @@
                 </a>
             </div>
 
-            <!-- DIREITA: AÇÕES DE ENTRAR / CADASTRAR / CONTA -->
+            <!-- DIREITA: AÇÕES DE ENTRAR / CADASTRAR / MINHA CONTA -->
             <div class="flex items-center gap-1.5 sm:gap-2">
                 {% if user %}
-                    <a href="/denuncias" class="btn-cyber-outline btn-pequeno text-xs whitespace-nowrap" title="Acessar minhas ocorrências">
-                        Minha Conta
-                    </a>
+                    <div class="account-menu-wrap">
+                        <button id="btnAccountToggle" type="button" aria-expanded="false" aria-controls="accountMenu"
+                                class="btn-cyber-outline btn-pequeno text-xs whitespace-nowrap" onclick="toggleAccountMenu()">
+                            Minha Conta &#9662;
+                        </button>
+                        <div id="accountMenu" class="hidden account-dropdown" role="menu" aria-label="Informações e opções da conta">
+                            <div class="account-info-box">
+                                <div class="text-xs font-bold text-white">{{ user.nome }}</div>
+                                <div class="text-[11px] text-slate-300 font-mono" style="word-break:break-all;">{{ user.email }}</div>
+                                <div class="text-[11px] text-slate-400 mt-1">{{ user.cidade }}</div>
+                            </div>
+                            <a href="/denuncias" class="account-menu-item" role="menuitem" onclick="toggleAccountMenu(false)">
+                                <span>Minhas Denúncias</span>
+                                <span class="dropdown-item-desc">Acompanhar e registrar ocorrências</span>
+                            </a>
+                            <a href="/logout" class="account-menu-item" role="menuitem" onclick="toggleAccountMenu(false)">
+                                <span class="text-rose-400">Sair da Conta</span>
+                                <span class="dropdown-item-desc">Encerrar sua sessão</span>
+                            </a>
+                            <a href="/excluir-conta" class="account-menu-item" role="menuitem" onclick="toggleAccountMenu(false)">
+                                <span class="text-red-400">Excluir Conta</span>
+                                <span class="dropdown-item-desc">Apagar conta e dados permanentemente</span>
+                            </a>
+                        </div>
+                    </div>
                 {% else %}
                     <a href="/login" class="text-slate-300 hover:text-white font-semibold text-xs sm:text-sm px-2 py-1.5 transition-colors">
                         Entrar
@@ -126,30 +147,20 @@
                 </a>
                 <a href="/denuncias-publicas" class="dropdown-item" onclick="toggleCyberMenu(false)">
                     <span>Denúncias Públicas</span>
-                    <span class="dropdown-item-desc">Blog comunitário de ocorrências auditadas com tags</span>
+                    <span class="dropdown-item-desc">Consulte ocorrências públicas já analisadas</span>
                 </a>
-                <a href="/fato-ou-fake" class="dropdown-item border-rose-500/30" onclick="toggleCyberMenu(false)">
-                    <span class="text-rose-400">Checagem de Fatos (Fato ou Fake)</span>
-                    <span class="dropdown-item-desc">Mande um áudio ou texto e descubra se é real ou golpe em segundos</span>
+                <a href="/noticias" class="dropdown-item border-rose-500/30" onclick="toggleCyberMenu(false)">
+                    <span class="text-rose-400">Portal de Notícias e Alertas</span>
+                    <span class="dropdown-item-desc">Notícias sobre golpes, impostos, dinheiro público e direitos</span>
                 </a>
                 <a href="#stickyEmergencyBar" class="dropdown-item" onclick="toggleCyberMenu(false)">
                     <span>Telefones de Emergência 24h</span>
                     <span class="dropdown-item-desc">Polícia 190, Bombeiros 193, SAMU 192, Procon 151</span>
                 </a>
-                {% if user %}
-                    {% if user.is_admin %}
-                        <a href="/admin" class="dropdown-item border-amber-500/40" onclick="toggleCyberMenu(false)">
-                            <span class="text-amber-300">Painel de Moderação</span>
-                            <span class="dropdown-item-desc">Triagem de ocorrências e telemetria</span>
-                        </a>
-                    {% endif %}
-                    <a href="/excluir-conta" class="dropdown-item" onclick="toggleCyberMenu(false)">
-                        <span class="text-red-400">Excluir Conta</span>
-                        <span class="dropdown-item-desc">Direito ao esquecimento LGPD</span>
-                    </a>
-                    <a href="/logout" class="dropdown-item" onclick="toggleCyberMenu(false)">
-                        <span class="text-rose-400">Sair da Conta</span>
-                        <span class="dropdown-item-desc">Encerrar sua sessão com segurança</span>
+                {% if user and user.is_admin %}
+                    <a href="/admin" class="dropdown-item border-amber-500/40" onclick="toggleCyberMenu(false)">
+                        <span class="text-amber-300">Painel de Moderação</span>
+                        <span class="dropdown-item-desc">Triagem de ocorrências e telemetria</span>
                     </a>
                 {% endif %}
             </div>
@@ -192,8 +203,6 @@
                 <a href="#stickyEmergencyBar" class="hover:text-rose-400">Telefones de Emergência</a>
                 <a href="/diferencial" class="hover:text-rose-400">Sobre o Projeto</a>
                 <a href="/denuncias-publicas" class="hover:text-rose-400">Feed Comunitário</a>
-                <a href="/robots.txt" class="hover:text-rose-400">Robots</a>
-                <a href="/sitemap.xml" class="hover:text-rose-400">Sitemap</a>
             </div>
         </div>
     </footer>
@@ -243,6 +252,7 @@
         if (!menu || !btn) return;
         var willOpen = force !== undefined ? force : menu.classList.contains("hidden");
         if (willOpen) {
+            toggleAccountMenu(false);
             menu.classList.remove("hidden");
             btn.classList.add("active");
             btn.setAttribute("aria-expanded", "true");
@@ -252,14 +262,41 @@
             btn.setAttribute("aria-expanded", "false");
         }
     }
+    function toggleAccountMenu(force) {
+        var menu = document.getElementById("accountMenu");
+        var btn = document.getElementById("btnAccountToggle");
+        if (!menu || !btn) return;
+        var willOpen = force !== undefined ? force : menu.classList.contains("hidden");
+        if (willOpen) {
+            toggleCyberMenu(false);
+            menu.classList.remove("hidden");
+            btn.setAttribute("aria-expanded", "true");
+        } else {
+            menu.classList.add("hidden");
+            btn.setAttribute("aria-expanded", "false");
+        }
+    }
     document.addEventListener("keydown", function(e) {
-        if (e.key === "Escape") toggleCyberMenu(false);
+        if (e.key === "Escape") {
+            toggleCyberMenu(false);
+            toggleAccountMenu(false);
+        }
     });
     document.addEventListener("click", function(e) {
         var menu = document.getElementById("dropdownMenu");
         var btn = document.getElementById("btnMenuToggle");
         if (menu && btn && !menu.classList.contains("hidden") && !menu.contains(e.target) && !btn.contains(e.target)) {
             toggleCyberMenu(false);
+        }
+        var accMenu = document.getElementById("accountMenu");
+        var accBtn = document.getElementById("btnAccountToggle");
+        if (accMenu && accBtn && !accMenu.classList.contains("hidden") && !accMenu.contains(e.target) && !accBtn.contains(e.target)) {
+            toggleAccountMenu(false);
+        }
+    });
+    document.addEventListener("focusin", function(e) {
+        if (e.target && typeof e.target.scrollIntoView === "function" && e.target.closest("main")) {
+            e.target.scrollIntoView({ behavior: "smooth", block: "nearest" });
         }
     });
     </script>

@@ -1,9 +1,17 @@
+import datetime
 import gzip
 import os
 import re
 import secrets
+import smtplib
+import time
+import urllib.error
+import urllib.parse
+import urllib.request
 import uuid
+from email.message import EmailMessage
 from functools import wraps
+from html.parser import HTMLParser
 
 from flask import (
     Flask,
@@ -23,6 +31,8 @@ from werkzeug.utils import secure_filename
 
 import database as db
 import fact_checker
+import municipios
+import news_portal
 from profanity import contem_ofensa, sanitizar
 
 BASE_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
@@ -32,6 +42,7 @@ UPLOAD_DIR = db.UPLOAD_DIR
 
 BOT_API_KEY = os.environ.get("BOT_API_KEY", "protejaja-bot-secret-key-2026")
 EXTENSOES_PERMITIDAS = {"png", "jpg", "jpeg", "gif", "webp", "heic", "heif", "pdf", "mp4", "mov"}
+IMAGENS_FATO_PERMITIDAS = {"png", "jpg", "jpeg", "gif", "webp"}
 MAX_ANEXO = 5 * 1024 * 1024
 
 CSS_FILE_PATH = os.path.join(HOME_DIR, "css", "styles.min.css")
@@ -46,6 +57,164 @@ if os.path.exists(CSS_FILE_PATH):
 
 def arquivo_permitido(nome):
     return "." in nome and nome.rsplit(".", 1)[1].lower() in EXTENSOES_PERMITIDAS
+
+
+def imagem_fato_permitida(nome):
+    return "." in nome and nome.rsplit(".", 1)[1].lower() in IMAGENS_FATO_PERMITIDAS
+
+
+def data_limite_maioridade() -> str:
+    """Retorna a data máxima (YYYY-MM-DD) para ter 18 anos completos hoje."""
+    hoje = datetime.date.today()
+    try:
+        limite = hoje.replace(year=hoje.year - 18)
+    except ValueError:
+        # 29 de fevereiro em ano não bissexto
+        limite = hoje.replace(year=hoje.year - 18, day=28)
+    return limite.isoformat()
+
+
+def validar_maioridade(data_str: str) -> tuple[bool, str | None]:
+    """Valida se a data de nascimento (YYYY-MM-DD) corresponde a >= 18 anos."""
+    if not data_str:
+        return False, "Informe a data de nascimento."
+    try:
+        nasc = datetime.date.fromisoformat(data_str.strip())
+    except ValueError:
+        return False, "Data de nascimento inválida."
+
+    hoje = datetime.date.today()
+    if nasc > hoje:
+        return False, "Data de nascimento não pode ser futura."
+
+    idade = hoje.year - nasc.year - ((hoje.month, hoje.day) < (nasc.month, nasc.day))
+    if idade < 18:
+        return False, "Cadastro permitido apenas para maiores de 18 anos."
+    return True, None
+
+
+def _enviar_codigo_recuperacao_email(destinatario: str, nome: str, codigo: str) -> bool:
+    """
+    Envia o código OTP de 6 dígitos por SMTP quando configurado (SMTP_HOST).
+    Em ambiente local sem SMTP, registra apenas no log do servidor (nunca na resposta HTTP).
+    """
+    smtp_host = os.environ.get("SMTP_HOST", "").strip()
+    if not smtp_host:
+        print(f"[Recuperacao de Senha - DEV] E-mail: {destinatario} | Codigo OTP: {codigo}")
+        return False
+
+    smtp_port = int(os.environ.get("SMTP_PORT", "587"))
+    smtp_user = os.environ.get("SMTP_USER", "").strip()
+    smtp_pass = os.environ.get("SMTP_PASS", "")
+    smtp_from = os.environ.get("SMTP_FROM", smtp_user or "no-reply@protejaja.com.br")
+
+    msg = EmailMessage()
+    msg["Subject"] = "ProtejaJÁ — Código de recuperação de senha"
+    msg["From"] = smtp_from
+    msg["To"] = destinatario
+    msg.set_content(
+        f"Olá, {nome}.\n\n"
+        f"Seu código de verificação para redefinir sua senha no ProtejaJÁ é: {codigo}\n"
+        "Este código expira em 10 minutos.\n\n"
+        "Se você não solicitou a troca de senha, ignore este e-mail."
+    )
+
+    try:
+        with smtplib.SMTP(smtp_host, smtp_port, timeout=10) as server:
+            server.starttls()
+            if smtp_user and smtp_pass:
+                server.login(smtp_user, smtp_pass)
+            server.send_message(msg)
+        return True
+    except Exception as exc:
+        print(f"[Recuperacao de Senha] Falha ao enviar SMTP: {exc}")
+        return False
+
+
+class _LinkTextExtractor(HTMLParser):
+    """Extrator leve de título, meta descriptions e texto visível de links de notícias."""
+
+    def __init__(self):
+        super().__init__()
+        self._in_title = False
+        self._skip_depth = 0
+        self._in_p_or_h = False
+        self.title = ""
+        self.meta_desc = ""
+        self.chunks = []
+
+    def handle_starttag(self, tag, attrs):
+        tag_l = tag.lower()
+        if tag_l in ("script", "style", "noscript", "svg"):
+            self._skip_depth += 1
+        elif tag_l == "title":
+            self._in_title = True
+        elif tag_l in ("h1", "h2", "p", "article"):
+            self._in_p_or_h = True
+        elif tag_l == "meta":
+            attrs_d = dict((k.lower(), v or "") for k, v in attrs)
+            name = attrs_d.get("name", "").lower()
+            prop = attrs_d.get("property", "").lower()
+            if name in ("description", "twitter:description") or prop in ("og:title", "og:description"):
+                content = attrs_d.get("content", "").strip()
+                if content and content not in self.meta_desc:
+                    self.meta_desc = (self.meta_desc + " " + content).strip()
+
+    def handle_endtag(self, tag):
+        tag_l = tag.lower()
+        if tag_l in ("script", "style", "noscript", "svg") and self._skip_depth > 0:
+            self._skip_depth -= 1
+        elif tag_l == "title":
+            self._in_title = False
+        elif tag_l in ("h1", "h2", "p", "article"):
+            self._in_p_or_h = False
+
+    def handle_data(self, data):
+        if self._skip_depth > 0:
+            return
+        txt = " ".join(data.split())
+        if not txt:
+            return
+        if self._in_title:
+            self.title = (self.title + " " + txt).strip()
+        elif self._in_p_or_h and len(" ".join(self.chunks)) < 1200:
+            self.chunks.append(txt)
+
+
+def _extrair_texto_de_url(url: str) -> tuple[str, str]:
+    """Lê título e trechos principais de uma URL HTTP/HTTPS com segurança e timeout curto."""
+    parsed = urllib.parse.urlparse(url)
+    dominio = parsed.netloc.lower().replace("www.", "")
+    if parsed.scheme not in ("http", "https") or not dominio:
+        return "", ""
+
+    req = urllib.request.Request(
+        url,
+        headers={"User-Agent": "Mozilla/5.0 (compatible; ProtejaJaFactCheck/1.0)"},
+    )
+    try:
+        with urllib.request.urlopen(req, timeout=6) as resp:
+            ctype = (resp.headers.get("Content-Type") or "").lower()
+            if "html" not in ctype and "text" not in ctype:
+                return "", dominio
+            raw = resp.read(262144)  # máximo 256 KB
+            html_str = raw.decode("utf-8", errors="ignore")
+    except Exception:
+        # Fallback usando slug da URL se o site bloquear/expirar
+        slug_limpo = re.sub(r"[-_/]+", " ", parsed.path or "").strip()
+        return slug_limpo, dominio
+
+    parser = _LinkTextExtractor()
+    try:
+        parser.feed(html_str)
+    except Exception:
+        pass
+
+    partes = [p for p in [parser.title, parser.meta_desc, " ".join(parser.chunks[:6])] if p]
+    texto_final = " — ".join(partes)[:1500].strip()
+    if not texto_final:
+        texto_final = re.sub(r"[-_/]+", " ", parsed.path or "").strip()
+    return texto_final, dominio
 
 
 def login_obrigatorio(visao):
@@ -217,36 +386,80 @@ def create_app():
 
     @app.route("/home")
     def home():
-        denuncias_recentes = db.denuncias_aprovadas(limite=3)
-        return render_template("home.html", denuncias_recentes=denuncias_recentes)
+        rows = db.denuncias_aprovadas(limite=50)
+        ids = [int(r["id"]) for r in rows]
+        user_id = session.get("user_id")
+        contagens, curtidas_usuario = db.curtidas_por_denuncias(ids, user_id=user_id)
+        comentarios_map = db.comentarios_por_denuncias(ids)
+
+        enriquecidas = []
+        for r in rows:
+            d = dict(r)
+            rid = int(d["id"])
+            d["likes_count"] = contagens.get(rid, 0)
+            d["user_liked"] = rid in curtidas_usuario
+            d["comentarios_count"] = len(comentarios_map.get(rid, []))
+            enriquecidas.append(d)
+
+        ranking = sorted(
+            [d for d in enriquecidas if d["likes_count"] > 0],
+            key=lambda x: (-x["likes_count"], -int(x["id"])),
+        )[:3]
+        denuncias_recentes = enriquecidas[:6]
+        return render_template(
+            "home.html",
+            denuncias_recentes=denuncias_recentes,
+            ranking=ranking,
+        )
 
     @app.route("/diferencial")
     def diferencial():
         return render_template("diferencial.html")
 
+    @app.route("/api/municipios")
+    def api_municipios():
+        termo = (request.args.get("q") or "").strip()
+        try:
+            limite = int(request.args.get("limite", 10))
+        except ValueError:
+            limite = 10
+        return jsonify({"municipios": municipios.buscar_municipios(termo, limite=limite)})
+
     @app.route("/fato-ou-fake")
+    @app.route("/noticias")
     def fato_ou_fake():
-        return render_template("fato_ou_fake.html")
+        categoria_noticia = (request.args.get("tema") or "todas").strip().lower()
+        noticias = news_portal.obter_noticias(categoria=categoria_noticia, limite=12)
+        return render_template(
+            "fato_ou_fake.html",
+            noticias=noticias,
+            categoria_noticia=categoria_noticia,
+        )
 
     @app.route("/api/v1/checar-fato", methods=["POST"])
     def api_checar_fato():
         texto = ""
+        link = ""
         if request.is_json:
             dados = request.get_json(silent=True) or {}
             texto = (dados.get("texto") or "").strip()
+            link = (dados.get("link") or "").strip()
         else:
             texto = (request.form.get("texto") or "").strip()
+            link = (request.form.get("link") or "").strip()
 
-        arquivo_audio = request.files.get("audio")
-        if arquivo_audio and arquivo_audio.filename:
-            nome_seguro = secure_filename(f"audio_{uuid.uuid4().hex[:8]}_{arquivo_audio.filename}")
+        arquivo_imagem = request.files.get("imagem")
+        if arquivo_imagem and arquivo_imagem.filename:
+            if not imagem_fato_permitida(arquivo_imagem.filename):
+                return jsonify({
+                    "sucesso": False,
+                    "erro": "Formato de imagem inválido. Envie apenas PNG, JPG, JPEG, WEBP ou GIF.",
+                }), 400
+            nome_seguro = secure_filename(f"fato_{uuid.uuid4().hex[:8]}_{arquivo_imagem.filename}")
             caminho_temp = os.path.join(UPLOAD_DIR, nome_seguro)
             try:
-                arquivo_audio.save(caminho_temp)
-                if not texto:
-                    transcricao = fact_checker.transcrever_audio(caminho_temp)
-                    if transcricao:
-                        texto = transcricao
+                arquivo_imagem.save(caminho_temp)
+                tamanho_kb = round(os.path.getsize(caminho_temp) / 1024, 1)
             finally:
                 try:
                     if os.path.exists(caminho_temp):
@@ -254,13 +467,54 @@ def create_app():
                 except OSError:
                     pass
 
+            if not texto:
+                return jsonify({
+                    "sucesso": True,
+                    "status": "alerta",
+                    "confianca": 0,
+                    "veredito": "IMAGEM RECEBIDA — INFORME O TEXTO DA IMAGEM",
+                    "badge_class": "status-alerta",
+                    "score_confianca": 0,
+                    "texto_analisado": f"[Imagem: {arquivo_imagem.filename} ({tamanho_kb} KB)]",
+                    "parecer": (
+                        f"A imagem '{arquivo_imagem.filename}' ({tamanho_kb} KB) foi recebida e validada. "
+                        "Para cruzar a alegação com os registros oficiais (STF, Banco Central, Receita Federal, Anvisa e portais de checagem), "
+                        "informe também a manchete ou o texto exibido no print."
+                    ),
+                    "sintese": (
+                        "Imagem validada. Cole o texto ou manchete presente na imagem no campo de legenda para executar a auditoria completa."
+                    ),
+                    "motivos": [
+                        f"Arquivo recebido com segurança ({tamanho_kb} KB).",
+                        "Nenhuma leitura automática de texto (OCR) está configurada no servidor; adicione a legenda ou frase da imagem para checagem documental.",
+                    ],
+                    "orientacao": "Copie a manchete ou frase principal da imagem e cole no campo de legenda ou na aba Texto.",
+                    "fonte_recomendada": {"nome": "Auditoria Visual Proteja-Já", "url": None},
+                    "evidencias_oficiais": [],
+                })
+
+        if link:
+            parsed_link = urllib.parse.urlparse(link)
+            if parsed_link.scheme not in ("http", "https") or not parsed_link.netloc:
+                return jsonify({
+                    "sucesso": False,
+                    "erro": "Informe um link válido começando com http:// ou https://.",
+                }), 400
+            conteudo_link, dominio = _extrair_texto_de_url(link)
+            if conteudo_link:
+                texto = f"{conteudo_link} {texto}".strip()
+            elif not texto:
+                texto = f"Notícia publicada no domínio {dominio} ({link})"
+
         if not texto:
             return jsonify({
                 "sucesso": False,
-                "erro": "Nenhum áudio ou texto detectado. Fale pelo microfone ou digite o boato para checar."
+                "erro": "Nenhum conteúdo informado. Cole um texto, informe um link de notícia ou envie uma imagem com legenda para checar.",
             }), 400
 
         resultado = fact_checker.analisar_fato(texto)
+        if link and resultado.get("sucesso"):
+            resultado["link_analisado"] = link
         return jsonify(resultado)
 
     @app.route("/home/<path:filename>")
@@ -325,23 +579,27 @@ def create_app():
             email = (request.form.get("email") or "").strip().lower()
             data_nascimento = (request.form.get("data_nascimento") or "").strip()
             cidade = (request.form.get("cidade") or "").strip()
-            cidade_outra = (request.form.get("cidade_outra") or "").strip()
-            if cidade == "Outra Cidade (SP)" and cidade_outra:
-                cidade = cidade_outra
+            cidade_canonica = municipios.normalizar_municipio(cidade)
 
             endereco = (request.form.get("endereco") or "").strip()
             senha = request.form.get("senha") or ""
             nome_completo = f"{nome} {sobrenome}".strip()
 
+            maioridade_ok, erro_idade = validar_maioridade(data_nascimento)
+
             if not all([nome, sobrenome, email, data_nascimento, cidade, senha]):
                 flash("Preencha todos os campos do cadastro.", "error")
             elif not validar_email(email):
                 flash("Informe um e-mail válido.", "error")
+            elif not maioridade_ok:
+                flash(erro_idade, "error")
+            elif not cidade_canonica:
+                flash("Selecione um município brasileiro válido na lista (ex.: Araraquara - SP).", "error")
             elif len(senha) < 6:
                 flash("A senha deve ter no mínimo 6 caracteres.", "error")
             elif contem_ofensa(nome) or contem_ofensa(sobrenome):
                 flash("Nome ou sobrenome contêm palavras ofensivas e não podem ser usados.", "error")
-            elif contem_ofensa(cidade) or (endereco and contem_ofensa(endereco)):
+            elif contem_ofensa(cidade_canonica) or (endereco and contem_ofensa(endereco)):
                 flash("Cidade ou endereço contêm palavras ofensivas.", "error")
             elif db.email_cadastrado(email):
                 flash("Já existe uma conta com esse e-mail.", "error")
@@ -351,14 +609,14 @@ def create_app():
                     nome_completo,
                     email,
                     data_nascimento,
-                    cidade,
+                    cidade_canonica,
                     endereco,
                     senha_hash,
                 )
                 flash("Conta criada com sucesso! Faça login para continuar.", "success")
                 return redirect(url_for("login"))
 
-        return render_template("cadastro.html")
+        return render_template("cadastro.html", max_data_nascimento=data_limite_maioridade())
 
     @app.route("/login", methods=["GET", "POST"])
     def login():
@@ -386,22 +644,60 @@ def create_app():
 
     @app.route("/recuperar", methods=["GET", "POST"])
     def recuperar():
-        resultado = None
+        etapa = request.args.get("etapa", "solicitar")
+        email_pendente = (request.args.get("email") or "").strip().lower()
 
         if request.method == "POST":
+            acao = (request.form.get("acao") or "solicitar").strip()
             email = (request.form.get("email") or "").strip().lower()
-            data_nascimento = (request.form.get("data_nascimento") or "").strip()
+            email_pendente = email
 
-            usuario = db.usuario_por_email(email) if email else None
+            if acao == "redefinir":
+                etapa = "redefinir"
+                codigo = (request.form.get("codigo") or "").strip()
+                nova_senha = request.form.get("nova_senha") or ""
 
-            if not usuario or usuario["data_nascimento"] != data_nascimento:
-                flash("Dados não conferem com nenhuma conta cadastrada.", "error")
+                if not email or not codigo or not nova_senha:
+                    flash("Preencha o e-mail, o código de 6 dígitos e a nova senha.", "error")
+                elif len(nova_senha) < 6:
+                    flash("A nova senha deve ter no mínimo 6 caracteres.", "error")
+                else:
+                    usuario = db.usuario_por_email(email)
+                    reset = db.obter_codigo_recuperacao_ativo(usuario["id"]) if usuario else None
+                    agora = int(time.time())
+                    if (
+                        not reset
+                        or agora > reset["expira_em"]
+                        or not check_password_hash(reset["codigo_hash"], codigo)
+                    ):
+                        flash("Código inválido ou expirado. Solicite um novo código.", "error")
+                    else:
+                        db.marcar_codigo_recuperacao_usado(reset["id"])
+                        db.atualizar_senha(usuario["id"], generate_password_hash(nova_senha))
+                        flash("Senha redefinida com sucesso! Faça login com sua nova senha.", "success")
+                        return redirect(url_for("login"))
             else:
-                temporaria = secrets.token_urlsafe(8)
-                db.atualizar_senha(usuario["id"], generate_password_hash(temporaria))
-                resultado = (usuario["nome"], temporaria)
+                if not email or not validar_email(email):
+                    flash("Informe um e-mail válido.", "error")
+                else:
+                    usuario = db.usuario_por_email(email)
+                    if usuario:
+                        codigo = f"{secrets.randbelow(900000) + 100000}"
+                        expira_em = int(time.time()) + 600  # 10 minutos
+                        db.criar_codigo_recuperacao(
+                            usuario["id"],
+                            generate_password_hash(codigo),
+                            expira_em,
+                        )
+                        _enviar_codigo_recuperacao_email(email, usuario["nome"], codigo)
 
-        return render_template("recuperar.html", senha_temporaria=resultado)
+                    flash(
+                        "Se o e-mail estiver cadastrado, enviamos um código de verificação de 6 dígitos válido por 10 minutos.",
+                        "info",
+                    )
+                    etapa = "redefinir"
+
+        return render_template("recuperar.html", etapa=etapa, email_pendente=email_pendente)
 
     # ==========================================================
     # DENÚNCIAS & TERMO DE RESPONSABILIDADE LEGAL
@@ -414,11 +710,9 @@ def create_app():
 
         if request.method == "POST":
             denunciado = (request.form.get("denunciado") or "").strip()
-            cidade = (request.form.get("cidade") or "Araraquara").strip()
-            cidade_outra = (request.form.get("cidade_outra") or "").strip()
-            if cidade == "Outra Cidade (SP)" and cidade_outra:
-                cidade = cidade_outra
-            bairro = (request.form.get("bairro") or "Centro").strip()
+            cidade = (request.form.get("cidade") or "").strip()
+            cidade_canonica = municipios.normalizar_municipio(cidade)
+            bairro = (request.form.get("bairro") or "").strip()
 
             assunto = (request.form.get("assunto") or "").strip()
             categoria = (request.form.get("categoria") or "Geral").strip()
@@ -426,12 +720,12 @@ def create_app():
             termo_aceito = request.form.get("termo_responsabilidade")
             anexo = request.files.get("anexo")
 
-            if not termo_aceito:
-                flash("É obrigatório ler e concordar com o Termo de Declaração e Responsabilidade Legal.", "error")
-            elif not denunciado:
+            if not denunciado:
                 flash("Informe quem você está denunciando (estabelecimento, empresa ou pessoa).", "error")
             elif not cidade:
-                flash("Informe a cidade onde ocorreu o fato.", "error")
+                flash("Informe o município onde ocorreu o fato.", "error")
+            elif not cidade_canonica:
+                flash("Selecione um município brasileiro válido na lista (ex.: Araraquara - SP).", "error")
             elif not bairro:
                 flash("Informe o bairro da unidade/estabelecimento denunciado.", "error")
             elif not assunto:
@@ -440,7 +734,7 @@ def create_app():
                 flash("Descreva a denúncia antes de enviar.", "error")
             elif contem_ofensa(denunciado):
                 flash("O nome informado contém termos de baixo calão ou ofensas. Por favor, revise para manter o respeito.", "error")
-            elif contem_ofensa(cidade) or contem_ofensa(bairro):
+            elif contem_ofensa(cidade_canonica) or contem_ofensa(bairro):
                 flash("A cidade ou bairro contêm termos de baixo calão. Por favor, informe dados válidos.", "error")
             elif contem_ofensa(assunto):
                 flash("O assunto contém palavras de baixo calão. O ProtejaJá preza pelo respeito e não aceita ofensas.", "error")
@@ -456,38 +750,107 @@ def create_app():
                         anexo_invalido = True
                         flash("Foto ou anexo não recomendado. Envie apenas fotos nítidas do produto, local, cupom fiscal (JPG, PNG, WEBP) ou PDF/vídeo até 5 MB.", "error")
                     else:
-                        ext = nome_seguro.rsplit(".", 1)[1].lower() if "." in nome_seguro else "bin"
                         nome_anexo = f"{uuid.uuid4().hex[:12]}_{nome_seguro}"
                         anexo.save(os.path.join(UPLOAD_DIR, nome_anexo))
 
                 if not anexo_invalido:
-                    db.criar_denuncia(
-                        usuario["id"],
-                        sanitizar(denunciado),
-                        sanitizar(assunto),
-                        categoria,
-                        sanitizar(descricao),
-                        nome_anexo,
-                        termo_aceito=1,
-                        cidade=sanitizar(cidade),
-                        bairro=sanitizar(bairro),
-                    )
-                    flash("Denúncia enviada com sucesso! Ela foi para análise e será postada em até 24 horas se seguir as diretrizes da comunidade.", "success")
+                    if termo_aceito:
+                        db.criar_denuncia(
+                            usuario["id"],
+                            sanitizar(denunciado),
+                            sanitizar(assunto),
+                            categoria,
+                            sanitizar(descricao),
+                            nome_anexo,
+                            termo_aceito=1,
+                            cidade=sanitizar(cidade_canonica),
+                            bairro=sanitizar(bairro),
+                        )
+                        flash("Denúncia enviada com sucesso! Ela foi para análise e será postada em até 24 horas se seguir as diretrizes da comunidade.", "success")
+                    else:
+                        session["denuncia_pendente"] = {
+                            "denunciado": sanitizar(denunciado),
+                            "assunto": sanitizar(assunto),
+                            "categoria": categoria,
+                            "descricao": sanitizar(descricao),
+                            "anexo": nome_anexo,
+                            "cidade": sanitizar(cidade_canonica),
+                            "bairro": sanitizar(bairro),
+                        }
+                        return redirect(url_for("denuncia_termo"))
 
         denuncias_lista = db.denuncias_do_usuario(usuario["id"])
         return render_template("denuncias.html", denuncias=denuncias_lista)
+
+    @app.route("/denuncias/termo", methods=["GET", "POST"])
+    @login_obrigatorio
+    def denuncia_termo():
+        pendente = session.get("denuncia_pendente")
+        if not pendente:
+            flash("Preencha os dados da denúncia antes de aceitar o termo.", "info")
+            return redirect(url_for("denuncias"))
+
+        if request.method == "POST":
+            termo_aceito = request.form.get("termo_responsabilidade")
+            if not termo_aceito:
+                flash("É obrigatório concordar com o Termo de Declaração e Responsabilidade Legal.", "error")
+            else:
+                dados = session.pop("denuncia_pendente", None)
+                if dados:
+                    db.criar_denuncia(
+                        session["user_id"],
+                        dados["denunciado"],
+                        dados["assunto"],
+                        dados["categoria"],
+                        dados["descricao"],
+                        dados.get("anexo"),
+                        termo_aceito=1,
+                        cidade=dados["cidade"],
+                        bairro=dados["bairro"],
+                    )
+                    flash("Denúncia enviada com sucesso! Ela foi para análise e será postada em até 24 horas se seguir as diretrizes da comunidade.", "success")
+                return redirect(url_for("denuncias"))
+
+        return render_template("denuncia_termo.html", pendente=pendente)
 
     @app.route("/denuncias-publicas")
     def denuncias_publicas():
         categoria_filtro = request.args.get("categoria", "").strip()
         cidade_filtro = request.args.get("cidade", "").strip()
         busca = request.args.get("q", "").strip()
-        denuncias = db.denuncias_aprovadas(limite=20)
+        ordem = request.args.get("ordem", "recentes").strip().lower()
 
+        rows = db.denuncias_aprovadas(limite=50)
+        ids = [int(r["id"]) for r in rows]
+        user_id = session.get("user_id")
+        contagens, curtidas_usuario = db.curtidas_por_denuncias(ids, user_id=user_id)
+        comentarios_map = db.comentarios_por_denuncias(ids)
+
+        todas_enriquecidas = []
+        for r in rows:
+            d = dict(r)
+            rid = int(d["id"])
+            d["likes_count"] = contagens.get(rid, 0)
+            d["user_liked"] = rid in curtidas_usuario
+            d["comentarios"] = comentarios_map.get(rid, [])
+            todas_enriquecidas.append(d)
+
+        ranking = sorted(
+            [d for d in todas_enriquecidas if d["likes_count"] > 0],
+            key=lambda x: (-x["likes_count"], -int(x["id"])),
+        )[:3]
+
+        denuncias = todas_enriquecidas
         if categoria_filtro:
             denuncias = [d for d in denuncias if d["categoria"].lower() == categoria_filtro.lower()]
         if cidade_filtro:
-            denuncias = [d for d in denuncias if d["cidade"].lower() == cidade_filtro.lower()]
+            cf_norm = municipios._normalizar_texto(cidade_filtro)
+            denuncias = [
+                d for d in denuncias
+                if municipios._normalizar_texto(d["cidade"]) == cf_norm
+                or cf_norm.startswith(municipios._normalizar_texto(d["cidade"]) + " - ")
+                or municipios._normalizar_texto(d["cidade"]).startswith(cf_norm + " - ")
+            ]
         if busca:
             termo = busca.lower()
             denuncias = [
@@ -498,13 +861,47 @@ def create_app():
                 or termo in d["bairro"].lower()
             ]
 
+        if ordem == "ranking":
+            denuncias = sorted(denuncias, key=lambda x: (-x["likes_count"], -int(x["id"])))
+
         return render_template(
             "denuncias_publicas.html",
             denuncias=denuncias,
+            ranking=ranking,
             categoria_ativa=categoria_filtro,
             cidade_ativa=cidade_filtro,
             busca=busca,
+            ordem=ordem,
         )
+
+    @app.route("/denuncias-publicas/<int:report_id>/curtir", methods=["POST"])
+    @login_obrigatorio
+    def curtir_denuncia_publica(report_id):
+        denuncia = db.denuncia_publica_por_id(report_id)
+        if denuncia is None:
+            abort(404)
+        curtido, total = db.alternar_curtida_denuncia(report_id, session["user_id"])
+        if request.headers.get("X-Requested-With") == "fetch" or request.is_json:
+            return jsonify({"sucesso": True, "curtido": curtido, "total": total})
+        return redirect(url_for("denuncias_publicas") + f"#denuncia-{report_id}")
+
+    @app.route("/denuncias-publicas/<int:report_id>/comentar", methods=["POST"])
+    @login_obrigatorio
+    def comentar_denuncia_publica(report_id):
+        denuncia = db.denuncia_publica_por_id(report_id)
+        if denuncia is None:
+            abort(404)
+        texto = (request.form.get("comentario") or "").strip()
+        if not texto or len(texto) < 3:
+            flash("Escreva um comentário com pelo menos 3 caracteres.", "error")
+        elif contem_ofensa(texto):
+            flash("Seu comentário contém termos ofensivos. Mantenha o respeito nos relatos.", "error")
+        else:
+            usuario = db.usuario_por_id(session["user_id"])
+            primeiro_nome = (usuario["nome"].split()[0] if usuario and usuario["nome"] else "Cidadão")
+            db.adicionar_comentario_denuncia(report_id, session["user_id"], primeiro_nome, sanitizar(texto[:500]))
+            flash("Comentário publicado.", "success")
+        return redirect(url_for("denuncias_publicas") + f"#denuncia-{report_id}")
 
     @app.route("/denuncias/<int:denuncia_id>")
     @login_obrigatorio

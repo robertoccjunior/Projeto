@@ -1,29 +1,27 @@
 {% extends "base.html" %}
 
-{% block title %}Exclusão Definitiva de Dados // ProtejaJá{% endblock %}
+{% block title %}Excluir Conta // ProtejaJá{% endblock %}
 
 {% block content %}
 <section class="w-full max-w-md mx-auto py-10">
     <div class="card-cyber border-red-500/40">
         <div class="text-center mb-6">
-            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-red-500/10 border border-red-500/30 text-red-400 text-xs font-mono mb-2 uppercase">
-                Direito ao Esquecimento &bull; LGPD
-            </span>
+            <span class="badge-neon-pink mb-2">Exclusão de Conta</span>
             <h1 class="text-2xl font-extrabold text-white">Excluir Conta e Dados</h1>
             <p class="text-xs text-slate-400 mt-1">
-                Atenção: esta ação é irreversível. Todas as suas ocorrências, anexos e dados cadastrais serão expurgados do banco de dados.
+                Atenção: esta ação não pode ser desfeita. Sua conta, suas denúncias e seus arquivos enviados serão apagados permanentemente.
             </p>
         </div>
 
         <form method="POST" action="/excluir-conta" class="space-y-4">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div>
-                <label for="senha" class="campo-label text-red-300">Confirme sua senha para validar o expurgo *</label>
+                <label for="senha" class="campo-label text-red-300">Confirme sua senha para continuar</label>
                 <input type="password" id="senha" name="senha" required autocomplete="current-password"
-                       class="campo border-red-500/40 focus:border-red-500" placeholder="Digite sua senha atual">
+                       class="campo border-red-500/40 focus:border-red-500" placeholder="Digite sua senha atual (obrigatório)">
             </div>
 
-            <button type="submit" class="w-full py-3 px-4 rounded-xl bg-red-600/80 hover:bg-red-600 text-white font-bold text-sm tracking-wide transition-all shadow-[0_0_15px_rgba(220,38,38,0.4)]">
+            <button type="submit" class="btn-cyber-danger">
                 Confirmar Exclusão Permanente
             </button>
         </form>

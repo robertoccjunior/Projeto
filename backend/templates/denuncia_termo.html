@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block title %}Termo de Responsabilidade // ProtejaJá{% endblock %}
+
+{% block content %}
+<section class="w-full max-w-3xl mx-auto py-8">
+    <div class="text-center mb-6">
+        <span class="badge-neon-pink mb-3">Etapa 2 de 2</span>
+        <h1 class="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">Confirmação e Termo de Responsabilidade</h1>
+        <p class="text-sm text-slate-400 mt-1 max-w-lg mx-auto">
+            Revise os dados da sua denúncia e confirme o termo abaixo para concluir o envio.
+        </p>
+    </div>
+
+    <!-- RESUMO DA DENÚNCIA -->
+    <div class="card-cyber mb-6">
+        <h2 class="text-sm font-bold text-white uppercase tracking-wider mb-3 pb-2 border-b border-slate-800">
+            Resumo da Ocorrência
+        </h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs text-slate-300">
+            <div><strong class="text-slate-400">Denunciado:</strong> {{ pendente.denunciado }}</div>
+            <div><strong class="text-slate-400">Localidade:</strong> {{ pendente.cidade }} ({{ pendente.bairro }})</div>
+            <div><strong class="text-slate-400">Assunto:</strong> {{ pendente.assunto }}</div>
+            <div><strong class="text-slate-400">Categoria:</strong> {{ pendente.categoria }}</div>
+        </div>
+        <div class="mt-3 pt-3 border-t border-slate-800/80 text-xs text-slate-300">
+            <strong class="text-slate-400 block mb-1">Relato:</strong>
+            <p class="whitespace-pre-line">{{ pendente.descricao }}</p>
+        </div>
+        {% if pendente.anexo %}
+            <div class="mt-3 pt-3 border-t border-slate-800/80 text-xs text-rose-300 font-mono">
+                Prova anexada: {{ pendente.anexo }}
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- TERMO DE RESPONSABILIDADE LEGAL -->
+    <div class="card-cyber">
+        <form method="POST" action="/denuncias/termo" class="space-y-5" id="formTermoDenuncia">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+            <div>
+                <div class="flex items-center justify-between mb-3">
+                    <span class="text-xs font-mono font-bold text-rose-400 uppercase tracking-wider">
+                        Termo de Declaração de Veracidade e Responsabilidade Legal
+                    </span>
+                    <span class="text-[11px] font-mono text-slate-400">Obrigatório</span>
+                </div>
+
+                <div class="p-4 rounded-xl bg-slate-950/70 border border-slate-800 text-xs text-slate-300 leading-relaxed space-y-2.5">
+                    <p class="font-semibold text-rose-300">
+                        LEIA ATENTAMENTE ANTES DE CONCLUIR SEU REGISTRO:
+                    </p>
+                    <p>
+                        1. <strong>Declaração de Veracidade:</strong> Ao submeter esta denúncia através da plataforma <strong>ProtejaJá</strong>, declaro, sob as penas do <strong>art. 299</strong> (Falsidade Ideológica) e do <strong>art. 340</strong> (Comunicação Falsa de Crime ou Contravenção) do <strong>Código Penal Brasileiro (Decreto-Lei nº 2.848/1940)</strong>, que todas as informações prestadas e eventuais documentos/mídias anexados refletem com exatidão os fatos por mim vivenciados ou constatados.
+                    </p>
+                    <p>
+                        2. <strong>Vedação à Calúnia, Difamação e Injúria:</strong> Estou ciente de que a imputação de fato falso tipificado como crime ou ofensivo à reputação de terceiros, sem fundamento ou boa-fé, sujeita o autor à responsabilização civil e criminal por Calúnia (art. 138), Difamação (art. 139) e Injúria (art. 140) do Código Penal.
+                    </p>
+                    <p>
+                        3. <strong>Registros de Acesso:</strong> Compreendo que os registros desta transação são mantidos em sigilo nos termos da legislação vigente, podendo ser requisitados por autoridade judicial competente em caso de apuração de ilícitos.
+                    </p>
+                    <p>
+                        4. <strong>Análise e Publicação (Até 24 Horas):</strong> Estou ciente de que a denúncia passará por análise prévia antes da publicação no feed público em até 24 horas.
+                    </p>
+                </div>
+            </div>
+
+            <div class="pt-2 flex items-start gap-3">
+                <input type="checkbox" id="checkTermoAceite" name="termo_responsabilidade" value="1" required
+                       class="checkbox-cyber mt-0.5 cursor-pointer">
+                <label for="checkTermoAceite" class="text-xs text-slate-200 leading-snug cursor-pointer select-none">
+                    <strong>Confirmo e concordo integralmente</strong> com o Termo de Declaração de Veracidade e Responsabilidade Legal, atestando a autenticidade dos fatos narrados.
+                </label>
+            </div>
+
+            <div class="flex flex-col sm:flex-row gap-3 pt-2">
+                <a href="/denuncias" class="btn-cyber-outline btn-grande text-center text-xs sm:w-auto">
+                    Voltar e Editar
+                </a>
+                <button type="submit" id="btnConfirmarPostagem" disabled
+                        class="btn-cyber-primary btn-grande flex-1 font-bold tracking-wide opacity-50 cursor-not-allowed">
+                    Concordar e Enviar Denúncia
+                </button>
+            </div>
+        </form>
+    </div>
+</section>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    var check = document.getElementById("checkTermoAceite");
+    var btn = document.getElementById("btnConfirmarPostagem");
+    if (check && btn) {
+        check.addEventListener("change", function () {
+            if (check.checked) {
+                btn.disabled = false;
+                btn.classList.remove("opacity-50", "cursor-not-allowed");
+            } else {
+                btn.disabled = true;
+                btn.classList.add("opacity-50", "cursor-not-allowed");
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

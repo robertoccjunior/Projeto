@@ -17,4 +17,4 @@ RUN mkdir -p /app/db /app/backend/uploads
 
 EXPOSE 5000
 
-CMD ["python", "run.py"]
+CMD ["gunicorn", "--bind", "0.0.0.0:5000", "--workers", "2", "--threads", "4", "run:app"]

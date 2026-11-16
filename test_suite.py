@@ -64,7 +64,7 @@ class ProtejaJaTestSuite(unittest.TestCase):
                 "sobrenome": "",
                 "email": "sem_sobrenome@teste.com",
                 "data_nascimento": "1990-01-01",
-                "cidade": "Araraquara",
+                "cidade": "Araraquara - SP",
                 "senha": "senhaSegura123",
             },
             follow_redirects=True,
@@ -80,7 +80,7 @@ class ProtejaJaTestSuite(unittest.TestCase):
                 "sobrenome": "Oliveira",
                 "email": email_valido,
                 "data_nascimento": "1990-01-01",
-                "cidade": "Araraquara",
+                "cidade": "Araraquara - SP",
                 "senha": "senhaSegura123",
             },
             follow_redirects=True,
@@ -101,7 +101,7 @@ class ProtejaJaTestSuite(unittest.TestCase):
                 "sobrenome": "Santos",
                 "email": email,
                 "data_nascimento": "1992-05-10",
-                "cidade": "São Carlos",
+                "cidade": "São Carlos - SP",
                 "endereco": "Av Brasil, 500",
                 "senha": senha_pura,
             },
@@ -124,7 +124,7 @@ class ProtejaJaTestSuite(unittest.TestCase):
                 "sobrenome": "Silva",
                 "email": email,
                 "data_nascimento": "1988-10-20",
-                "cidade": "Ribeirão Preto",
+                "cidade": "Ribeirão Preto - SP",
                 "endereco": "Rua 15, 200",
                 "senha": senha,
             },
@@ -140,27 +140,46 @@ class ProtejaJaTestSuite(unittest.TestCase):
         self.assertIn(b"finalizada com seguran", res_logout.data)
 
     def test_05_RF05_recuperacao_senha(self):
-        """RF05: Recuperar senha mediante e-mail e data de nascimento gerando senha temporária."""
+        """RF05: Recuperação segura por código OTP de 6 dígitos enviado ao e-mail (nunca exposto na tela)."""
         email = f"user_recup_{int(time.time() * 1000)}@teste.com"
-        nasc = "1995-12-05"
         self.client.post(
             "/cadastro",
             data={
                 "nome": "Paula",
                 "sobrenome": "Teixeira",
                 "email": email,
-                "data_nascimento": nasc,
-                "cidade": "Araraquara",
+                "data_nascimento": "1995-12-05",
+                "cidade": "Araraquara - SP",
                 "endereco": "Rua 9 de Julho, 1200",
                 "senha": "senhaOriginal123",
             },
             follow_redirects=True,
         )
-        res_falha = self.client.post("/recuperar", data={"email": email, "data_nascimento": "1990-01-01"}, follow_redirects=True)
-        self.assertIn(b"Dados n\xc3\xa3o conferem", res_falha.data)
+        # Etapa 1: solicita código (resposta genérica, sem vazar senha/código no HTML)
+        res_solicitar = self.client.post("/recuperar", data={"acao": "solicitar", "email": email}, follow_redirects=True)
+        self.assertEqual(res_solicitar.status_code, 200)
+        self.assertNotIn(b"NOVA SENHA GERADA PARA:", res_solicitar.data)
+        self.assertIn("código de verificação de 6 dígitos".encode("utf-8"), res_solicitar.data)
 
-        res_sucesso = self.client.post("/recuperar", data={"email": email, "data_nascimento": nasc}, follow_redirects=True)
-        self.assertIn(b"NOVA SENHA GERADA PARA:", res_sucesso.data)
+        # Etapa 2a: código inválido não altera a senha
+        res_falha = self.client.post(
+            "/recuperar",
+            data={"acao": "redefinir", "email": email, "codigo": "000000", "nova_senha": "novaSenhaSegura123"},
+            follow_redirects=True,
+        )
+        self.assertIn("Código inválido ou expirado".encode("utf-8"), res_falha.data)
+
+        # Etapa 2b: código válido redefine a senha com sucesso
+        user = db.usuario_por_email(email)
+        db.criar_codigo_recuperacao(user["id"], generate_password_hash("654321"), int(time.time()) + 600)
+        res_ok = self.client.post(
+            "/recuperar",
+            data={"acao": "redefinir", "email": email, "codigo": "654321", "nova_senha": "novaSenhaSegura123"},
+            follow_redirects=True,
+        )
+        self.assertIn(b"Senha redefinida com sucesso", res_ok.data)
+        user_atualizado = db.usuario_por_email(email)
+        self.assertTrue(check_password_hash(user_atualizado["senha_hash"], "novaSenhaSegura123"))
 
     def test_06_RF12_exclusao_definitiva_conta_e_provas(self):
         """RF12: Excluir conta definitivamente (cadastro, denúncias e provas físicas) com senha."""
@@ -207,12 +226,12 @@ class ProtejaJaTestSuite(unittest.TestCase):
         with self.client.session_transaction() as sess:
             sess["user_id"] = user_id
 
-        # Envio SEM aceitar o termo
+        # Etapa 1 SEM termo: vai para a tela separada /denuncias/termo sem gravar ainda
         res_sem_termo = self.client.post(
             "/denuncias",
             data={
                 "denunciado": "Supermercado X",
-                "cidade": "Araraquara",
+                "cidade": "Araraquara - SP",
                 "bairro": "Centro",
                 "assunto": "Produto com data vencida",
                 "categoria": "Produto",
@@ -220,7 +239,17 @@ class ProtejaJaTestSuite(unittest.TestCase):
             },
             follow_redirects=True,
         )
-        self.assertIn("Termo de Declaração e Responsabilidade Legal".encode("utf-8"), res_sem_termo.data)
+        self.assertIn("Termo de Declaração de Veracidade e Responsabilidade Legal".encode("utf-8"), res_sem_termo.data)
+        self.assertEqual(len(db.denuncias_do_usuario(user_id)), 0)
+
+        # Etapa 2: aceitar o termo em /denuncias/termo efetiva a denúncia
+        res_etapa2 = self.client.post(
+            "/denuncias/termo",
+            data={"termo_responsabilidade": "1"},
+            follow_redirects=True,
+        )
+        self.assertEqual(res_etapa2.status_code, 200)
+        self.assertEqual(len(db.denuncias_do_usuario(user_id)), 1)
 
         # Envio COM termo e prova
         arquivo_prova = (io.BytesIO(b"conteudo-foto-prova-fake"), "foto_vencido.jpg")
@@ -228,7 +257,7 @@ class ProtejaJaTestSuite(unittest.TestCase):
             "/denuncias",
             data={
                 "denunciado": "Supermercado Savegnago",
-                "cidade": "Araraquara",
+                "cidade": "Araraquara - SP",
                 "bairro": "Vila Xavier",
                 "assunto": "Produto com data vencida",
                 "categoria": "Produto",
@@ -245,7 +274,7 @@ class ProtejaJaTestSuite(unittest.TestCase):
         self.assertGreater(len(denuncias), 0)
         ultima = denuncias[0]
         self.assertEqual(ultima["status"], db.STATUS_EM_ANALISE_IA)
-        self.assertEqual(ultima["cidade"], "Araraquara")
+        self.assertEqual(ultima["cidade"], "Araraquara - SP")
         self.assertEqual(ultima["bairro"], "Vila Xavier")
         self.assertIsNotNone(ultima["anexo"])
 
@@ -288,7 +317,7 @@ class ProtejaJaTestSuite(unittest.TestCase):
                 "sobrenome": "Silva",
                 "email": f"bad_{int(time.time()*1000)}@t.com",
                 "data_nascimento": "1990-01-01",
-                "cidade": "Araraquara",
+                "cidade": "Araraquara - SP",
                 "endereco": "Rua 1",
                 "senha": "senha123",
             },
@@ -357,11 +386,11 @@ class ProtejaJaTestSuite(unittest.TestCase):
     # ==========================================================
 
     def test_12_fato_ou_fake_com_auditoria_automatizada(self):
-        """Valida página /fato-ou-fake e API /api/v1/checar-fato com auditoria automatizada e fontes oficiais."""
-        res_pagina = self.client.get("/fato-ou-fake")
+        """Valida página /noticias (Portal de Notícias e Alertas) e API /api/v1/checar-fato."""
+        res_pagina = self.client.get("/noticias")
         self.assertEqual(res_pagina.status_code, 200)
-        self.assertIn(b"Checagem de Fatos em Tempo Real", res_pagina.data)
-        self.assertIn("Auditoria Automatizada".encode("utf-8"), res_pagina.data)
+        self.assertIn(b"Portal de Not\xc3\xadcias e Alertas", res_pagina.data)
+        self.assertIn(b"Not\xc3\xadcias e Alertas Recentes", res_pagina.data)
 
         # Teste de checagem com recuperação e fundamentação oficial
         res_api = self.client.post("/api/v1/checar-fato", json={
@@ -408,7 +437,7 @@ class ProtejaJaTestSuite(unittest.TestCase):
             "/denuncias",
             data={
                 "denunciado": "Loja A",
-                "cidade": "Araraquara",
+                "cidade": "Araraquara - SP",
                 "bairro": "Centro",
                 "assunto": "Teste anexo proibido",
                 "categoria": "Geral",
@@ -459,24 +488,25 @@ class ProtejaJaTestSuite(unittest.TestCase):
         self.assertIn('menu-icon-svg', html_home)
         self.assertIn('MENU', html_home)
 
-        # 2. Agrupamento da seção de recursos com tag section, aria-labelledby e grid nativo
-        self.assertIn('aria-labelledby="titulo-recursos-principais"', html_home)
-        self.assertIn('id="titulo-recursos-principais" class="sr-only"', html_home)
-        self.assertIn("card-recurso-destaque", html_home)
-        self.assertIn("grid-recursos-nativa", html_home)
-        self.assertIn("Novo Recurso", html_home)
-        self.assertIn("Prazo Oficial", html_home)
-        self.assertIn("Indexação Pública", html_home)
-        self.assertIn("Comprovação", html_home)
+        # 2. Agrupamento da seção de recursos em /diferencial com tag section, aria-labelledby e grid nativo
+        res_dif = self.client.get("/diferencial")
+        self.assertEqual(res_dif.status_code, 200)
+        html_dif = res_dif.data.decode("utf-8")
+        self.assertIn('aria-labelledby="titulo-recursos-principais"', html_dif)
+        self.assertIn('id="titulo-recursos-principais" class="sr-only"', html_dif)
+        self.assertIn("card-recurso-destaque", html_dif)
+        self.assertIn("grid-recursos-nativa", html_dif)
+        self.assertIn("Novo Recurso", html_dif)
+        self.assertIn("Prazo Oficial", html_dif)
+        self.assertIn("Indexação Pública", html_dif)
+        self.assertIn("Comprovação", html_dif)
 
-        # 3. Interface de Resultado Fato ou Fake com role status e aria-live polite
-        res_fake = self.client.get("/fato-ou-fake")
-        self.assertEqual(res_fake.status_code, 200)
-        html_fake = res_fake.data.decode("utf-8")
-
-        self.assertIn('id="resultadoBadgeAlert"', html_fake)
-        self.assertIn('role="status"', html_fake)
-        self.assertIn('aria-live="polite"', html_fake)
+        # 3. Portal de Notícias e Alertas acessível e sem verificador quebrado
+        res_not = self.client.get("/noticias")
+        self.assertEqual(res_not.status_code, 200)
+        html_not = res_not.data.decode("utf-8")
+        self.assertIn("Portal de Notícias e Alertas", html_not)
+        self.assertNotIn("resultadoBadgeAlert", html_not)
 
         # 4. Validação das classes CSS de alto contraste e foco visível no CSS inlined
         self.assertIn(".menu-toggle-btn:focus-visible", html_home)
@@ -547,9 +577,160 @@ class ProtejaJaTestSuite(unittest.TestCase):
         self.assertNotIn("Validação RAG", html_fake)
         self.assertNotIn("Evidência RAG recuperada", html_fake)
 
-        self.assertIn("Verificar Fatos Agora", html_fake)
-        self.assertIn("Auditoria Automatizada Proteja-Já", html_fake)
-        self.assertIn("Fundamentação Oficial e Registros Institucionais", html_fake)
+        self.assertIn("Portal de Notícias e Alertas", html_fake)
+        self.assertIn("Notícias e Alertas Recentes", html_fake)
+
+    def test_20_autocomplete_municipios_ibge_e_validacao(self):
+        """Valida endpoint /api/municipios (<100ms, 5.570 municípios IBGE) e cadastro/denúncia nacional."""
+        for prefixo, esperado in [
+            ("arara", "Araraquara - SP"),
+            ("matao", "Matão - SP"),
+            ("curit", "Curitiba - PR"),
+        ]:
+            t0 = time.perf_counter()
+            res = self.client.get(f"/api/municipios?q={prefixo}")
+            dt_ms = (time.perf_counter() - t0) * 1000
+            self.assertEqual(res.status_code, 200)
+            self.assertLess(dt_ms, 100.0)
+            lista = res.get_json().get("municipios", [])
+            self.assertLessEqual(len(lista), 10)
+            self.assertIn(esperado, lista)
+
+        # Município inválido deve ser rejeitado no cadastro
+        res_inv = self.client.post(
+            "/cadastro",
+            data={
+                "nome": "Teste",
+                "sobrenome": "Nacional",
+                "email": f"inv_mun_{int(time.time()*1000)}@t.com",
+                "data_nascimento": "1995-03-10",
+                "cidade": "Cidade Inventada - XX",
+                "senha": "senha123",
+            },
+            follow_redirects=True,
+        )
+        self.assertIn("Selecione um município brasileiro válido".encode("utf-8"), res_inv.data)
+
+        # Cadastro em outro estado (Curitiba - PR) deve funcionar
+        email_pr = f"pr_{int(time.time()*1000)}@t.com"
+        res_pr = self.client.post(
+            "/cadastro",
+            data={
+                "nome": "Ana",
+                "sobrenome": "Paraná",
+                "email": email_pr,
+                "data_nascimento": "1995-03-10",
+                "cidade": "Curitiba - PR",
+                "senha": "senha123",
+            },
+            follow_redirects=True,
+        )
+        self.assertIn(b"Conta criada com sucesso", res_pr.data)
+
+        user_pr = db.usuario_por_email(email_pr)
+        with self.client.session_transaction() as sess:
+            sess["user_id"] = user_pr["id"]
+
+        res_den_ba = self.client.post(
+            "/denuncias",
+            data={
+                "denunciado": "Loja Nacional",
+                "cidade": "Salvador - BA",
+                "bairro": "Pituba",
+                "assunto": "Cobrança indevida",
+                "categoria": "Serviço",
+                "descricao": "Cobraram taxa adicional sem aviso prévio no caixa.",
+                "termo_responsabilidade": "1",
+            },
+            follow_redirects=True,
+        )
+        self.assertEqual(res_den_ba.status_code, 200)
+        self.assertEqual(db.denuncias_do_usuario(user_pr["id"])[0]["cidade"], "Salvador - BA")
+
+    def test_21_validacao_maioridade_18_anos(self):
+        """Valida bloqueio de cadastro para menores de 18 anos."""
+        import datetime
+        menor_data = (datetime.date.today().replace(year=datetime.date.today().year - 15)).isoformat()
+        email_menor = f"menor_{int(time.time()*1000)}@t.com"
+        res = self.client.post(
+            "/cadastro",
+            data={
+                "nome": "João",
+                "sobrenome": "Menor",
+                "email": email_menor,
+                "data_nascimento": menor_data,
+                "cidade": "São Paulo - SP",
+                "senha": "senha123",
+            },
+            follow_redirects=True,
+        )
+        self.assertIn(b"maiores de 18 anos", res.data)
+        self.assertIsNone(db.usuario_por_email(email_menor))
+
+    def test_22_fato_ou_fake_texto_imagem_link_sem_audio_e_campos_obrigatorios(self):
+        """Valida remoção completa de Fato ou Fake da UI, Portal de Notícias ativo e rótulos obrigatórios."""
+        res_not = self.client.get("/noticias")
+        html_not = res_not.data.decode("utf-8")
+        self.assertIn("Portal de Notícias e Alertas", html_not)
+        self.assertIn("Golpes e Fraudes", html_not)
+        self.assertIn("Impostos e Dinheiro Público", html_not)
+        self.assertNotIn("Verificar Fatos Agora", html_not)
+        self.assertNotIn("speechSynthesis", html_not)
+        self.assertNotIn("MediaRecorder", html_not)
+        self.assertNotIn("gravadorNativo", html_not)
+        self.assertNotIn("arquivoImagem", html_not)
+
+        # Link inválido deve retornar 400
+        res_link_inv = self.client.post("/api/v1/checar-fato", json={"link": "ftp://invalido"})
+        self.assertEqual(res_link_inv.status_code, 400)
+
+        # Rótulos/placeholders explícitos de obrigatoriedade
+        for rota in ["/cadastro", "/login", "/recuperar"]:
+            html = self.client.get(rota).data.decode("utf-8")
+            self.assertIn("(obrigatório)", html)
+        html_rec = self.client.get("/recuperar").data.decode("utf-8")
+        self.assertNotIn("data_nascimento", html_rec)
+
+    def test_23_curtidas_ranking_e_comentarios_publicos(self):
+        """Valida curtida ('Também fui afetado'), ranking e comentários com login obrigatório e filtro antiofensa."""
+        u = db.criar_usuario("Cidadao Social", f"soc_{int(time.time()*1000)}@t.com", "1990-01-01", "São Paulo - SP", "", generate_password_hash("123456"))
+        d_id = db.criar_denuncia(u, "Empresa Teste Ranking", "Cobrança abusiva", "Serviço", "Relato para teste de ranking e comentários.", None, cidade="São Paulo - SP", bairro="Centro")
+        db.atualizar_status_denuncia(d_id, db.STATUS_APROVADO)
+
+        # Garante sessão deslogada antes de testar comportamento de visitante
+        with self.client.session_transaction() as sess:
+            sess.clear()
+
+        # Deslogado vê o botão de curtir apontando para /cadastro e não pode curtir/comentar via POST
+        res_anon = self.client.get("/denuncias-publicas")
+        self.assertIn('href="/cadastro"', res_anon.data.decode("utf-8"))
+        self.assertEqual(self.client.post(f"/denuncias-publicas/{d_id}/curtir").status_code, 302)
+        self.assertEqual(self.client.post(f"/denuncias-publicas/{d_id}/comentar", data={"comentario": "Oi"}).status_code, 302)
+
+        with self.client.session_transaction() as sess:
+            sess["user_id"] = u
+
+        # Curtir incrementa e aparece no ranking
+        res_curtir = self.client.post(f"/denuncias-publicas/{d_id}/curtir", follow_redirects=True)
+        self.assertEqual(res_curtir.status_code, 200)
+        html_pub = res_curtir.data.decode("utf-8")
+        self.assertIn("Também fui afetado (1)", html_pub)
+        self.assertIn("Ranking — Casos com Mais Pessoas Afetadas", html_pub)
+
+        # Comentário válido aparece; ofensivo é bloqueado
+        res_com_ok = self.client.post(
+            f"/denuncias-publicas/{d_id}/comentar",
+            data={"comentario": "Passei pelo mesmo problema nessa unidade."},
+            follow_redirects=True,
+        )
+        self.assertIn("Passei pelo mesmo problema nessa unidade.", res_com_ok.data.decode("utf-8"))
+
+        res_com_bad = self.client.post(
+            f"/denuncias-publicas/{d_id}/comentar",
+            data={"comentario": "bando de fdp"},
+            follow_redirects=True,
+        )
+        self.assertIn("termos ofensivos", res_com_bad.data.decode("utf-8"))
 
 
 if __name__ == "__main__":

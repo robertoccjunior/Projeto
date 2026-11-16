@@ -47,18 +47,17 @@ de "colorir". É a planta baixa do site.
 |              |     Criar conta             |              |
 |              |  Preencha seus dados...     |              |
 |              |-----------------------------|              |
-|              | Nome completo  [________]   |              |
-|              | E-mail         [________]   |              |
-|              | Data nasc.     [________]   |              |
-|              | Cidade  [___] | Senha [___] |              |
-|              | Endereço completo [_______] |              |
+|              | Primeiro Nome * | Sobrenome * |              |
+|              | E-mail *        | Nasc. (18+) * |            |
+|              | Município (IBGE) * [________] |              |
+|              | Senha *           [________] |              |
 |              | [    CADASTRAR    ] (rosa)  |              |
 |              | Já tem conta? Entrar        |              |
 |              +-----------------------------+              |
 +----------------------------------------------------------+
 ```
 
-**Só 6 campos:** nome, e-mail, data de nascimento, cidade, senha e endereço.
+**Campos obrigatórios (`* (obrigatório)`):** primeiro nome, sobrenome, e-mail, data de nascimento (mínimo 18 anos), município (`Cidade - UF` via autocomplete IBGE) e senha (sem exigência de endereço residencial, conforme LGPD).
 
 ---
 

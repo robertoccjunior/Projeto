@@ -1,14 +1,14 @@
 {% extends "base.html" %}
 
-{% block title %}Blog Cidadão // Ocorrências Comunitárias Auditadas // ProtejaJá{% endblock %}
-{% block description %}Consulte ocorrências, denúncias e relatos auditados pela comunidade no blog de utilidade pública do ProtejaJá. Organizado por tags temáticas e cidades.{% endblock %}
+{% block title %}Ocorrências Públicas &amp; Ranking // ProtejaJá{% endblock %}
+{% block description %}Consulte ocorrências, denúncias e relatos auditados pela comunidade no ProtejaJá. Apoie casos semelhantes com "Também fui afetado", comente e acompanhe o ranking.{% endblock %}
 
 {% block json_ld %}
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@type": "CollectionPage",
-  "name": "Blog Cidadão - ProtejaJá",
+  "name": "Ocorrências Públicas - ProtejaJá",
   "description": "Feed comunitário de ocorrências públicas e fiscalização cidadã auditadas.",
   "url": "{{ request.base_url }}"
 }
@@ -18,37 +18,85 @@
 {% block content %}
 <section class="w-full max-w-4xl mx-auto py-8">
     <header class="text-center mb-8">
-        <span class="badge-neon-pink mb-3">Blog Cidadão &bull; Utilidade Pública</span>
-        <h1 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">Ocorrências Comunitárias Auditadas</h1>
+        <span class="badge-neon-pink mb-3">Comunidade &amp; Fiscalização</span>
+        <h1 class="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">Ocorrências Públicas</h1>
         <p class="text-sm text-slate-300 mt-2 max-w-2xl mx-auto">
-            Canal de fiscalização coletiva. Relatos verificados pela moderação com provas documentais, organizados por tags temáticas para consulta e indexação pública.
+            Relatos reais verificados com provas. Se você também foi lesado pelo mesmo problema, clique em
+            <strong class="text-rose-300">Também fui afetado</strong> para dar força e subir a ocorrência no ranking.
         </p>
     </header>
 
-    <!-- BARRA DE PESQUISA & FILTRO POR PALAVRA-CHAVE -->
+    <!-- RANKING DAS MAIS CURTIDAS / MAIS PESSOAS AFETADAS -->
+    {% if ranking %}
+        <section class="card-cyber card-recurso-destaque mb-8" aria-labelledby="tituloRanking">
+            <div class="flex items-center justify-between gap-2 mb-4 pb-2 border-b border-slate-800">
+                <div>
+                    <span class="badge-neon-pink text-[10px]">Em Alta na Comunidade</span>
+                    <h2 id="tituloRanking" class="text-lg font-extrabold text-white mt-1">
+                        Ranking — Casos com Mais Pessoas Afetadas
+                    </h2>
+                </div>
+                <a href="/denuncias-publicas?ordem=ranking" class="text-xs font-mono text-rose-400 hover:text-rose-300 underline">
+                    Ordenar feed por ranking &rarr;
+                </a>
+            </div>
+            <div class="space-y-3">
+                {% for top in ranking %}
+                    <a href="#denuncia-{{ top.id }}"
+                       class="flex flex-col sm:flex-row sm:items-center justify-between gap-2 p-3 rounded-xl bg-slate-950/70 border border-slate-800 hover:border-rose-500 transition-all">
+                        <div>
+                            <span class="text-xs font-mono font-bold text-rose-400 mr-2">#{{ loop.index }}</span>
+                            <strong class="text-sm text-white">{{ top.assunto }}</strong>
+                            <span class="text-xs text-slate-400 block sm:inline sm:ml-2">
+                                {{ top.denunciado }} &bull; {{ top.cidade }}
+                            </span>
+                        </div>
+                        <span class="badge-status-ia status-reprovado whitespace-nowrap">
+                            {{ top.likes_count }} afetado{% if top.likes_count != 1 %}s{% endif %}
+                        </span>
+                    </a>
+                {% endfor %}
+            </div>
+        </section>
+    {% endif %}
+
+    <!-- BARRA DE PESQUISA & FILTRO POR MUNICÍPIO NACIONAL E PALAVRA-CHAVE -->
     <div class="mb-6">
-        <form method="GET" action="/denuncias-publicas" class="search-bar-wrap" role="search" aria-label="Buscar ocorrências">
-            <label for="campoBuscaPublica" class="sr-only">Termo de busca</label>
-            <input type="text" id="campoBuscaPublica" name="q" value="{{ busca|default('', true) }}"
-                   placeholder="Buscar por estabelecimento, bairro, assunto ou palavra..."
-                   class="campo">
-            <button type="submit" class="btn-cyber-primary btn-pequeno">Buscar</button>
-            {% if busca or categoria_ativa or cidade_ativa %}
-                <a href="/denuncias-publicas" class="btn-cyber-outline btn-pequeno">Limpar</a>
-            {% endif %}
+        <form method="GET" action="/denuncias-publicas" class="grid grid-cols-1 sm:grid-cols-12 gap-2 items-start" role="search" aria-label="Buscar ocorrências">
+            <div class="sm:col-span-5">
+                <label for="campoBuscaPublica" class="sr-only">Termo de busca</label>
+                <input type="text" id="campoBuscaPublica" name="q" value="{{ busca|default('', true) }}"
+                       placeholder="Buscar por estabelecimento, bairro ou assunto..."
+                       class="campo">
+            </div>
+            <div class="sm:col-span-5 autocomplete-wrap">
+                <label for="campoCidadePublica" class="sr-only">Filtrar por município</label>
+                <input type="text" id="campoCidadePublica" name="cidade" value="{{ cidade_ativa|default('', true) }}"
+                       autocomplete="off" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="listaMunicipiosPublico"
+                       placeholder="Filtrar por município (ex.: São Paulo - SP)..."
+                       class="campo">
+                <div id="listaMunicipiosPublico" role="listbox" class="hidden autocomplete-dropdown"></div>
+            </div>
+            <div class="sm:col-span-2 flex gap-2">
+                <button type="submit" class="btn-cyber-primary btn-pequeno flex-1">Buscar</button>
+                {% if busca or categoria_ativa or cidade_ativa or ordem == 'ranking' %}
+                    <a href="/denuncias-publicas" class="btn-cyber-outline btn-pequeno">Limpar</a>
+                {% endif %}
+            </div>
         </form>
 
-        <!-- TAGS TEMÁTICAS POPULARES -->
-        <nav class="flex flex-wrap items-center justify-center gap-2 mt-4" aria-label="Filtrar por tags temáticas">
-            <span class="text-xs text-slate-300 font-mono">Tags:</span>
-            <a href="/denuncias-publicas" class="tag-pill {% if not categoria_ativa and not cidade_ativa %}active{% endif %}">#Todas</a>
-            <a href="/denuncias-publicas?categoria=Consumidor" class="tag-pill {% if categoria_ativa == 'Consumidor' %}active{% endif %}">#Consumidor</a>
-            <a href="/denuncias-publicas?categoria=Produto" class="tag-pill {% if categoria_ativa == 'Produto' %}active{% endif %}">#Produto</a>
-            <a href="/denuncias-publicas?categoria=Serviço" class="tag-pill {% if categoria_ativa == 'Serviço' %}active{% endif %}">#Serviço</a>
-            <a href="/denuncias-publicas?categoria=Segurança" class="tag-pill {% if categoria_ativa == 'Segurança' %}active{% endif %}">#Segurança</a>
-            <a href="/denuncias-publicas?cidade=Araraquara" class="tag-pill {% if cidade_ativa == 'Araraquara' %}active{% endif %}">#Araraquara</a>
-            <a href="/denuncias-publicas?cidade=Ribeirão Preto" class="tag-pill {% if cidade_ativa == 'Ribeirão Preto' %}active{% endif %}">#RibeirãoPreto</a>
-            <a href="/denuncias-publicas?cidade=São Carlos" class="tag-pill {% if cidade_ativa == 'São Carlos' %}active{% endif %}">#SãoCarlos</a>
+        <!-- FILTROS E ORDENAÇÃO -->
+        <nav class="flex flex-wrap items-center justify-center gap-2 mt-4" aria-label="Filtrar e ordenar ocorrências">
+            <a href="/denuncias-publicas?ordem=recentes{% if categoria_ativa %}&categoria={{ categoria_ativa }}{% endif %}{% if cidade_ativa %}&cidade={{ cidade_ativa }}{% endif %}{% if busca %}&q={{ busca }}{% endif %}"
+               class="tag-pill {% if ordem != 'ranking' %}active{% endif %}">Mais Recentes</a>
+            <a href="/denuncias-publicas?ordem=ranking{% if categoria_ativa %}&categoria={{ categoria_ativa }}{% endif %}{% if cidade_ativa %}&cidade={{ cidade_ativa }}{% endif %}{% if busca %}&q={{ busca }}{% endif %}"
+               class="tag-pill {% if ordem == 'ranking' %}active{% endif %}">Mais Afetados (Ranking)</a>
+            <span class="text-xs text-slate-500 font-mono">|</span>
+            <a href="/denuncias-publicas" class="tag-pill {% if not categoria_ativa and not cidade_ativa %}active{% endif %}">Todas</a>
+            <a href="/denuncias-publicas?categoria=Produto" class="tag-pill {% if categoria_ativa == 'Produto' %}active{% endif %}">Produto</a>
+            <a href="/denuncias-publicas?categoria=Serviço" class="tag-pill {% if categoria_ativa == 'Serviço' %}active{% endif %}">Serviço</a>
+            <a href="/denuncias-publicas?categoria=Local" class="tag-pill {% if categoria_ativa == 'Local' %}active{% endif %}">Local</a>
+            <a href="/denuncias-publicas?categoria=Segurança" class="tag-pill {% if categoria_ativa == 'Segurança' %}active{% endif %}">Segurança</a>
         </nav>
     </div>
 
@@ -56,11 +104,11 @@
     {% if denuncias %}
         <div class="space-y-6">
             {% for d in denuncias %}
-                <article class="card-cyber blog-card" itemscope itemtype="https://schema.org/NewsArticle">
+                <article id="denuncia-{{ d.id }}" class="card-cyber blog-card" itemscope itemtype="https://schema.org/NewsArticle">
                     <header class="flex flex-wrap items-center justify-between gap-2 mb-3 pb-2 border-b border-slate-800">
                         <div class="flex items-center gap-2">
                             <a href="/denuncias-publicas?categoria={{ d.categoria }}" class="tag-pill">#{{ d.categoria }}</a>
-                            <span class="badge-status-ia status-aprovado">Auditada & Publicada</span>
+                            <span class="badge-status-ia status-aprovado">Publicada</span>
                         </div>
                         <time class="text-xs font-mono text-slate-400" itemprop="datePublished" datetime="{{ d.criado_em }}">{{ d.criado_em }}</time>
                     </header>
@@ -70,7 +118,7 @@
                     </h2>
 
                     <div class="text-xs text-rose-400 font-mono font-semibold mb-3">
-                        Empresa: <strong itemprop="about" class="text-white">{{ d.denunciado }}</strong> &bull; 
+                        Empresa / Alvo: <strong itemprop="about" class="text-white">{{ d.denunciado }}</strong> &bull;
                         Localidade: {{ d.cidade }} ({{ d.bairro }})
                     </div>
 
@@ -82,20 +130,76 @@
                         <figure class="pt-3 border-t border-slate-800 mb-4">
                             <a href="/uploads/{{ d.anexo }}" target="_blank" rel="noopener noreferrer"
                                class="inline-flex items-center gap-2 text-xs font-mono text-rose-400 hover:text-rose-300 font-semibold bg-rose-500/10 px-3 py-1.5 rounded-lg border border-rose-500/30">
-                                Visualizar Prova Documental Anexa ({{ d.anexo }})
+                                Visualizar Prova Anexa ({{ d.anexo }})
                             </a>
                         </figure>
                     {% endif %}
 
-                    <!-- TAGS FOOTER DO POST -->
-                    <footer class="pt-3 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-2 text-xs">
-                        <div class="flex flex-wrap gap-1.5">
-                            <a href="/denuncias-publicas?categoria={{ d.categoria }}" class="tag-pill">#{{ d.categoria }}</a>
-                            <a href="/denuncias-publicas?cidade={{ d.cidade }}" class="tag-pill">#{{ d.cidade }}</a>
-                            <a href="/denuncias-publicas?q={{ d.bairro }}" class="tag-pill">#{{ d.bairro }}</a>
+                    <!-- BARRA DE APOIO ("TAMBÉM FUI AFETADO") E LOCALIDADE -->
+                    <footer class="pt-3 border-t border-slate-800/80 flex flex-wrap items-center justify-between gap-3 text-xs mb-4">
+                        <div class="flex flex-wrap items-center gap-2">
+                            {% if user %}
+                                <form method="POST" action="/denuncias-publicas/{{ d.id }}/curtir">
+                                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                    <button type="submit"
+                                            class="tab-cyber-btn {% if d.user_liked %}is-active{% endif %}">
+                                        {% if d.user_liked %}
+                                            &#10003; Também fui afetado ({{ d.likes_count }})
+                                        {% else %}
+                                            Também fui afetado ({{ d.likes_count }})
+                                        {% endif %}
+                                    </button>
+                                </form>
+                            {% else %}
+                                <a href="/cadastro" class="tab-cyber-btn" title="Cadastre-se para curtir esta ocorrência">
+                                    Também fui afetado ({{ d.likes_count }})
+                                </a>
+                            {% endif %}
                         </div>
-                        <span class="text-slate-400 font-mono text-[11px]">Auditado em 24h</span>
+
+                        <div class="flex flex-wrap gap-1.5">
+                            <a href="/denuncias-publicas?cidade={{ d.cidade }}" class="tag-pill">{{ d.cidade }}</a>
+                            <a href="/denuncias-publicas?q={{ d.bairro }}" class="tag-pill">{{ d.bairro }}</a>
+                        </div>
                     </footer>
+
+                    <!-- COMENTÁRIOS DA COMUNIDADE -->
+                    <div class="pt-3 border-t border-slate-800/80">
+                        <h3 class="text-xs font-mono font-bold text-slate-300 uppercase mb-3">
+                            Comentários ({{ d.comentarios|length }})
+                        </h3>
+
+                        {% if d.comentarios %}
+                            <div class="space-y-2 mb-3">
+                                {% for c in d.comentarios %}
+                                    <div class="p-2.5 rounded-lg bg-slate-950/70 border border-slate-800 text-xs">
+                                        <div class="flex items-center justify-between gap-2 mb-1">
+                                            <strong class="text-rose-300">{{ c.autor_nome }}</strong>
+                                            <span class="text-[11px] font-mono text-slate-400">{{ c.criado_em }}</span>
+                                        </div>
+                                        <p class="text-slate-200 leading-relaxed">{{ c.texto }}</p>
+                                    </div>
+                                {% endfor %}
+                            </div>
+                        {% else %}
+                            <p class="text-xs text-slate-400 mb-3">Nenhum comentário ainda. Seja o primeiro a relatar sua experiência.</p>
+                        {% endif %}
+
+                        {% if user %}
+                            <form method="POST" action="/denuncias-publicas/{{ d.id }}/comentar" class="flex flex-col sm:flex-row gap-2">
+                                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                                <label for="comentario-{{ d.id }}" class="sr-only">Escrever comentário</label>
+                                <input type="text" id="comentario-{{ d.id }}" name="comentario" required minlength="3" maxlength="500"
+                                       class="campo text-xs flex-1" placeholder="Comente sobre esse caso com respeito (obrigatório)...">
+                                <button type="submit" class="btn-cyber-outline btn-pequeno whitespace-nowrap">Comentar</button>
+                            </form>
+                        {% else %}
+                            <p class="text-xs text-slate-400">
+                                <a href="/login" class="text-rose-400 hover:text-rose-300 font-semibold underline">Entre na sua conta</a>
+                                para curtir ou comentar nesta ocorrência.
+                            </p>
+                        {% endif %}
+                    </div>
                 </article>
             {% endfor %}
         </div>
@@ -106,7 +210,7 @@
                 {% if busca or categoria_ativa or cidade_ativa %}
                     Nenhum relato encontrado para os filtros selecionados. Tente remover os filtros ou buscar por outro termo.
                 {% else %}
-                    Assim que novas denúncias passarem pela análise de conformidade (em até 24 horas), elas aparecerão listadas aqui em tempo real.
+                    Assim que novas denúncias passarem pela análise de conformidade (em até 24 horas), elas aparecerão listadas aqui.
                 {% endif %}
             </p>
         </div>
@@ -115,5 +219,12 @@
 {% endblock %}
 
 {% block scripts %}
-<!-- Página de leitura pública: zero scripts render-blocking para máxima performance -->
+<script src="{{ url_for('home_static', filename='js/municipios-autocomplete.js', v='2') }}" defer></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    if (window.ProtejaMunicipios) {
+        window.ProtejaMunicipios.init("campoCidadePublica", "listaMunicipiosPublico", { requireSelection: false });
+    }
+});
+</script>
 {% endblock %}

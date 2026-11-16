@@ -17,12 +17,12 @@ Este documento especifica os requisitos do sistema ProtejaJA, organizados em req
 
 | Código | Requisito Funcional | Local |
 |---|---|---|
-| RF01 | O sistema deve permitir cadastrar usuário com nome e sobrenome separados (ambos obrigatórios), e-mail, data de nascimento, cidade e senha (sem exigência de endereço residencial, respeitando a minimização de dados da LGPD). | Tela Cadastro |
+| RF01 | O sistema deve permitir cadastrar usuário com nome e sobrenome separados, e-mail, data de nascimento (exigindo maioridade mínima de 18 anos), município brasileiro oficial (`Cidade - UF` via autocomplete IBGE) e senha — todos marcados explicitamente como `* (obrigatório)` na tela — sem exigência de endereço residencial (minimização LGPD). | Tela Cadastro |
 | RF02 | O sistema deve criptografar a senha com algoritmo scrypt antes de armazená-la no banco. | Cadastro |
 | RF03 | O sistema deve permitir o login com e-mail e senha com sessão segura. | Tela Login |
 | RF04 | O sistema deve permitir sair da conta (logout), invalidando a sessão. | Menu |
-| RF05 | O sistema deve permitir recuperar a senha mediante confirmação de e-mail e data de nascimento, gerando senha temporária. | Tela Recuperar |
-| RF06 | O sistema deve permitir registrar denúncia com os campos: quem está denunciando, sobre o quê, categoria, cidade, bairro e descrição detalhada. | Tela Denúncias |
+| RF05 | O sistema deve permitir recuperar a senha mediante envio de código de verificação (OTP de 6 dígitos com validade de 10 minutos) para o e-mail cadastrado, sem exibir senhas na tela e sem solicitar data de nascimento. | Tela Recuperar |
+| RF06 | O sistema deve permitir registrar denúncia com os campos obrigatórios explicitamente identificados (`* (obrigatório)`): quem está denunciando, município brasileiro (`Cidade - UF` via autocomplete IBGE), bairro, assunto e descrição detalhada, além de categoria opcional. | Tela Denúncias |
 | RF07 | O sistema deve permitir anexar prova (imagem, PDF ou vídeo) com limite de 5 MB e validação de extensão. | Tela Denúncias |
 | RF08 | O sistema deve listar de forma privativa e isolada as denúncias de cada usuário. | Tela Denúncias |
 | RF09 | O sistema deve bloquear palavras ofensivas, termos de baixo calão e leet-speak (em nomes, cidades, assuntos e descrições). | Todas as telas |
@@ -31,7 +31,7 @@ Este documento especifica os requisitos do sistema ProtejaJA, organizados em req
 | RF12 | O sistema deve permitir excluir a conta definitivamente (cadastro, denúncias e provas físicas do disco), com confirmação obrigatória por senha (LGPD). | Menu |
 | RF13 | O sistema deve dispor de painel do administrador para visualizar ocorrências e aprovar ou rejeitar cada uma. | Painel admin |
 | RF14 | O sistema deve exibir publicamente no blog/feed apenas as denúncias aprovadas, com filtros por categoria e tags temáticas, sem exigir login. | Página pública / Home |
-| RF15 | O sistema deve oferecer checagem de fatos em tempo real ("Fato ou Fake") com motor RAG nativo (SQLite FTS5) e transcrição de áudio. | Fato ou Fake (`/fato-ou-fake`) |
+| RF15 | O sistema deve oferecer checagem de fatos em tempo real ("Fato ou Fake") com motor RAG nativo (SQLite FTS5) aceitando texto, link de notícia ou imagem. | Fato ou Fake (`/fato-ou-fake`) |
 | RF16 | O sistema deve exigir a leitura e aceite do Termo de Declaração e Responsabilidade Legal com mecanismo *Scroll-to-Agree* antes de liberar o envio da denúncia. | Tela Denúncias |
 | RF17 | O sistema deve fornecer API REST protegida por chave de autenticação (`X-API-Key`) para integração de robôs de triagem por IA com atribuição de score de confiança. | Endpoints `/api/v1/` |
 | RF18 | O sistema deve disponibilizar barra fixa persistente de utilidade pública com discagem direta para telefones de emergência (190, 193, 192, 151, 199, 180, 181). | Rodapé Global |
@@ -51,6 +51,7 @@ Este documento especifica os requisitos do sistema ProtejaJA, organizados em req
 | RNF07 | O sistema deve ser empacotado em contêiner Docker reproduzível via `docker compose`. | Portabilidade |
 | RNF08 | Os dados (banco SQLite e arquivos físicos de upload) devem persistir em volumes mapeados após reinício do serviço. | Confiabilidade |
 | RNF09 | O código deve ser organizado em arquitetura em camadas (Apresentação/Templates, Lógica de Negócio, Persistência, Filtro de Ofensas e Motor RAG). | Manutenibilidade |
+| RNF10 | A busca de municípios brasileiros (`/api/municipios`) deve responder em menos de 100ms sobre a base oficial do IBGE (5.570 municípios), com normalização de acentos/caixa, debounce de 200ms e limite de 10 resultados no DOM. | Desempenho & Escalabilidade |
 
 ---
 

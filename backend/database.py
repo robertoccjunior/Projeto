@@ -57,6 +57,37 @@ CREATE TABLE IF NOT EXISTS reports (
     FOREIGN KEY (user_id) REFERENCES users (id),
     FOREIGN KEY (analisado_por_admin_id) REFERENCES users (id)
 );
+
+CREATE TABLE IF NOT EXISTS password_resets (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    user_id INTEGER NOT NULL,
+    codigo_hash TEXT NOT NULL,
+    expira_em INTEGER NOT NULL,
+    usado INTEGER NOT NULL DEFAULT 0,
+    criado_em TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS report_likes (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    report_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    criado_em TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
+    UNIQUE(report_id, user_id),
+    FOREIGN KEY (report_id) REFERENCES reports (id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS report_comments (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    report_id INTEGER NOT NULL,
+    user_id INTEGER NOT NULL,
+    autor_nome TEXT NOT NULL,
+    texto TEXT NOT NULL,
+    criado_em TEXT NOT NULL DEFAULT (datetime('now', 'localtime')),
+    FOREIGN KEY (report_id) REFERENCES reports (id) ON DELETE CASCADE,
+    FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+);
 """
 
 
@@ -253,6 +284,15 @@ def anexos_do_usuario(user_id):
 
 def apagar_conta_completa(user_id):
     conn = get_connection()
+    conn.execute(
+        "DELETE FROM report_likes WHERE user_id = ? OR report_id IN (SELECT id FROM reports WHERE user_id = ?)",
+        (user_id, user_id),
+    )
+    conn.execute(
+        "DELETE FROM report_comments WHERE user_id = ? OR report_id IN (SELECT id FROM reports WHERE user_id = ?)",
+        (user_id, user_id),
+    )
+    conn.execute("DELETE FROM password_resets WHERE user_id = ?", (user_id,))
     conn.execute("DELETE FROM reports WHERE user_id = ?", (user_id,))
     conn.execute("DELETE FROM users WHERE id = ?", (user_id,))
     conn.commit()
@@ -384,3 +424,125 @@ def contadores_metricas():
         "aprovados": aprovados,
         "reprovados": reprovados,
     }
+
+
+def criar_codigo_recuperacao(user_id, codigo_hash, expira_em):
+    conn = get_connection()
+    conn.execute("UPDATE password_resets SET usado = 1 WHERE user_id = ? AND usado = 0", (user_id,))
+    conn.execute(
+        "INSERT INTO password_resets (user_id, codigo_hash, expira_em) VALUES (?, ?, ?)",
+        (user_id, codigo_hash, expira_em),
+    )
+    conn.commit()
+    if not has_app_context():
+        conn.close()
+
+
+def obter_codigo_recuperacao_ativo(user_id):
+    conn = get_connection()
+    row = conn.execute(
+        "SELECT id, user_id, codigo_hash, expira_em, usado FROM password_resets "
+        "WHERE user_id = ? AND usado = 0 ORDER BY id DESC LIMIT 1",
+        (user_id,),
+    ).fetchone()
+    if not has_app_context():
+        conn.close()
+    return row
+
+
+def marcar_codigo_recuperacao_usado(reset_id):
+    conn = get_connection()
+    conn.execute("UPDATE password_resets SET usado = 1 WHERE id = ?", (reset_id,))
+    conn.commit()
+    if not has_app_context():
+        conn.close()
+
+
+def denuncia_publica_por_id(report_id):
+    conn = get_connection()
+    row = conn.execute(
+        "SELECT id, denunciado, assunto, categoria, descricao, anexo, criado_em, cidade, bairro "
+        "FROM reports WHERE id = ? AND status = ?",
+        (report_id, STATUS_APROVADO),
+    ).fetchone()
+    if not has_app_context():
+        conn.close()
+    return row
+
+
+def alternar_curtida_denuncia(report_id, user_id):
+    conn = get_connection()
+    existente = conn.execute(
+        "SELECT id FROM report_likes WHERE report_id = ? AND user_id = ?",
+        (report_id, user_id),
+    ).fetchone()
+    if existente:
+        conn.execute("DELETE FROM report_likes WHERE id = ?", (existente["id"],))
+        curtido = False
+    else:
+        conn.execute(
+            "INSERT INTO report_likes (report_id, user_id) VALUES (?, ?)",
+            (report_id, user_id),
+        )
+        curtido = True
+    conn.commit()
+    total = conn.execute(
+        "SELECT COUNT(*) AS c FROM report_likes WHERE report_id = ?",
+        (report_id,),
+    ).fetchone()["c"]
+    if not has_app_context():
+        conn.close()
+    return curtido, total
+
+
+def curtidas_por_denuncias(report_ids, user_id=None):
+    if not report_ids:
+        return {}, set()
+    conn = get_connection()
+    placeholders = ",".join("?" for _ in report_ids)
+    rows = conn.execute(
+        f"SELECT report_id, COUNT(*) AS total FROM report_likes WHERE report_id IN ({placeholders}) GROUP BY report_id",
+        tuple(report_ids),
+    ).fetchall()
+    contagens = {int(r["report_id"]): int(r["total"]) for r in rows}
+
+    curtidas_usuario = set()
+    if user_id:
+        urows = conn.execute(
+            f"SELECT report_id FROM report_likes WHERE user_id = ? AND report_id IN ({placeholders})",
+            (user_id, *report_ids),
+        ).fetchall()
+        curtidas_usuario = {int(r["report_id"]) for r in urows}
+
+    if not has_app_context():
+        conn.close()
+    return contagens, curtidas_usuario
+
+
+def adicionar_comentario_denuncia(report_id, user_id, autor_nome, texto):
+    conn = get_connection()
+    conn.execute(
+        "INSERT INTO report_comments (report_id, user_id, autor_nome, texto) VALUES (?, ?, ?, ?)",
+        (report_id, user_id, autor_nome, texto),
+    )
+    conn.commit()
+    if not has_app_context():
+        conn.close()
+
+
+def comentarios_por_denuncias(report_ids):
+    if not report_ids:
+        return {}
+    conn = get_connection()
+    placeholders = ",".join("?" for _ in report_ids)
+    rows = conn.execute(
+        f"SELECT id, report_id, autor_nome, texto, criado_em FROM report_comments "
+        f"WHERE report_id IN ({placeholders}) ORDER BY id ASC",
+        tuple(report_ids),
+    ).fetchall()
+    agrupado = {}
+    for r in rows:
+        agrupado.setdefault(int(r["report_id"]), []).append(dict(r))
+    if not has_app_context():
+        conn.close()
+    return agrupado

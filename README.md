@@ -1,16 +1,16 @@
 # 🛡️ ProtejaJÁ — Plataforma Cidadã de Denúncias e Checagem de Fatos
 
-**Projeto Integrador** de utilidade pública para registro seguro de ocorrências contra estabelecimentos, produtos e serviços (com foco regional no interior paulista: Araraquara, São Carlos, Ribeirão Preto e região), aliado a um canal de verificação de boatos em tempo real (**Fato ou Fake**).
+**Projeto Integrador** de utilidade pública com **abrangência nacional (todos os 5.570 municípios do Brasil)** para registro seguro de ocorrências contra estabelecimentos, produtos e serviços, aliado a um canal de verificação de boatos em tempo real (**Fato ou Fake**).
 
 ---
 
 ## Principais Funcionalidades
 
-- **Registro de Denúncias com Provas:** Envio de relatos categorizados (`#Produto`, `#Serviço`, `#PreçoAbusivo`, `#Higiene`, etc.) com localização (cidade/bairro), anexo de evidências (imagens, PDF ou vídeo até 5 MB) e mecanismo obrigatório *Scroll-to-Agree* do Termo de Responsabilidade Legal (Art. 339 do Código Penal).
-- **Moderação e Feed Público Auditado:** Painel administrativo para aprovação ou rejeição de ocorrências e integração via API REST para triagem automatizada com score de confiança. Apenas relatos aprovados vão para o feed comunitário público (`/denuncias-publicas`).
-- **Fato ou Fake (Checagem em Tempo Real):** Verificação instantânea de boatos por texto ou áudio de WhatsApp, consultando base de conhecimento indexada (SQLite FTS5) e fontes oficiais (Banco Central, Receita Federal, Anvisa, Procon, Ministério da Saúde e portais de checagem).
-- **Privacidade e Conformidade LGPD:**
-  - *Minimização de dados:* Cadastro exige apenas nome, sobrenome, e-mail, data de nascimento e cidade (sem coleta de endereço residencial).
+- **Registro de Denúncias com Provas e Autocomplete Nacional:** Envio de relatos categorizados (`#Produto`, `#Serviço`, `#PreçoAbusivo`, `#Higiene`, etc.) com autocomplete otimizado de todos os municípios brasileiros (base IBGE, formato `Cidade - UF`), bairro, anexo de evidências (imagens, PDF ou vídeo até 5 MB) e mecanismo obrigatório *Scroll-to-Agree* do Termo de Responsabilidade Legal (Art. 299/340 do Código Penal).
+- **Moderação e Feed Público Auditado:** Painel administrativo para aprovação ou rejeição de ocorrências e integração via API REST para triagem automatizada com score de confiança. Apenas relatos aprovados vão para o feed comunitário público (`/denuncias-publicas`), com filtro por município nacional e palavras-chave.
+- **Fato ou Fake (Checagem em Tempo Real):** Verificação instantânea de boatos por **texto, link de notícia ou imagem**, consultando base de conhecimento indexada (SQLite FTS5) e fontes oficiais (Banco Central, Receita Federal, Anvisa, Procon, Ministério da Saúde e portais de checagem).
+- **Privacidade, Maioridade e Conformidade LGPD:**
+  - *Minimização de dados e 18+:* Cadastro exige apenas nome, sobrenome, e-mail, data de nascimento (com validação estrita de maioridade >= 18 anos) e município, com indicação explícita de campos obrigatórios (`* (obrigatório)`).
   - *Direito ao Esquecimento:* Exclusão definitiva de conta (`/excluir-conta`) mediante senha, expurgando usuário, denúncias no banco e arquivos físicos de prova em `backend/uploads/`.
 - **Segurança & Filtro Antiofensa:** Hash criptográfico `scrypt`, queries 100% parametrizadas contra SQL Injection, proteção CSRF, cabeçalhos HTTP de segurança e bloqueio heurístico de palavras ofensivas/leet-speak.
 - **Alta Performance & Acessibilidade (WCAG AAA):** Interface *Dark Neon / Cyberpunk* com CSS crítico minificado inlined no `<head>`, compressão Gzip nativa e barra fixa 24h com discagem rápida de emergência (`190`, `193`, `192`, `151`, `199`, `180`, `181`).
@@ -38,7 +38,9 @@ protejaja/
 │   ├── uploads/             # Armazenamento físico seguro de anexos de provas
 │   ├── app.py               # Aplicação Flask, rotas, middlewares HTTP e endpoints REST
 │   ├── database.py          # Camada de persistência SQLite, migrações e queries parametrizadas
-│   ├── fact_checker.py      # Orquestrador do módulo Fato ou Fake e transcrição de áudio
+│   ├── fact_checker.py      # Orquestrador do módulo Fato ou Fake (texto, link e imagem)
+│   ├── municipios.py        # Índice em memória e busca normalizada dos 5.570 municípios IBGE
+│   ├── data/municipios.json # Base oficial IBGE de municípios brasileiros (Cidade - UF)
 │   ├── agentic_checker.py   # Pipeline de verificação web em fontes de autoridade
 │   ├── rag_engine.py        # Motor de busca textual em SQLite FTS5 com fatos oficiais
 │   └── profanity.py         # Filtro antiofensa e sanitização de texto

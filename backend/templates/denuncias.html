@@ -5,10 +5,10 @@
 {% block content %}
 <section class="w-full max-w-3xl mx-auto py-8">
     <div class="text-center mb-8">
-        <span class="badge-neon-pink mb-3">Canal Cidadão Criptografado</span>
+        <span class="badge-neon-pink mb-3">Nova Ocorrência</span>
         <h1 class="text-3xl font-extrabold text-white tracking-tight">Registrar Ocorrência</h1>
         <p class="text-sm text-slate-400 mt-1 max-w-lg mx-auto">
-            Seus dados estão protegidos. Cada registro é submetido à análise de conformidade e verificação pelas diretrizes comunitárias.
+            Seus dados ficam protegidos. Cada registro passa por análise antes de ser publicado.
         </p>
     </div>
 
@@ -17,78 +17,46 @@
         <form method="POST" action="/denuncias" enctype="multipart/form-data" class="space-y-5" id="formDenuncia">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div>
-                <label for="denunciado" class="campo-label">Quem você está denunciando? *</label>
+                <label for="denunciado" class="campo-label">Quem você está denunciando?</label>
                 <input type="text" id="denunciado" name="denunciado" required
-                       class="campo" placeholder="Ex.: Supermercado Savegnago, Posto Shell, Loja tal, Hospital..."
+                       class="campo" placeholder="Ex.: Supermercado, Posto, Loja, Hospital... (obrigatório)"
                        value="{{ request.form.get('denunciado', '') }}">
             </div>
 
-            <!-- CIDADE E BAIRRO PARA IDENTIFICAÇÃO DA UNIDADE / FILIAL -->
+            <!-- CIDADE (AUTOCOMPLETE NACIONAL IBGE) E BAIRRO -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                    <label for="cidadeDenuncia" class="campo-label">Cidade do Estabelecimento / Fato *</label>
-                    <select id="cidadeDenuncia" name="cidade" required class="campo">
-                        <optgroup label="Região de Araraquara">
-                            <option value="Araraquara" selected>Araraquara</option>
-                            <option value="Américo Brasiliense">Américo Brasiliense</option>
-                            <option value="Matão">Matão</option>
-                            <option value="São Carlos">São Carlos</option>
-                            <option value="Taquaritinga">Taquaritinga</option>
-                            <option value="Ibaté">Ibaté</option>
-                            <option value="Boa Esperança do Sul">Boa Esperança do Sul</option>
-                            <option value="Rincão">Rincão</option>
-                            <option value="Santa Lúcia">Santa Lúcia</option>
-                            <option value="Motuca">Motuca</option>
-                            <option value="Gavião Peixoto">Gavião Peixoto</option>
-                            <option value="Tabatinga">Tabatinga</option>
-                            <option value="Itápolis">Itápolis</option>
-                        </optgroup>
-                        <optgroup label="Região de Ribeirão Preto">
-                            <option value="Ribeirão Preto">Ribeirão Preto</option>
-                            <option value="Sertãozinho">Sertãozinho</option>
-                            <option value="Cravinhos">Cravinhos</option>
-                            <option value="Jaboticabal">Jaboticabal</option>
-                            <option value="Bebedouro">Bebedouro</option>
-                            <option value="Franca">Franca</option>
-                            <option value="Batatais">Batatais</option>
-                            <option value="Serrana">Serrana</option>
-                            <option value="Jardinópolis">Jardinópolis</option>
-                            <option value="Pontal">Pontal</option>
-                        </optgroup>
-                        <optgroup label="Outras Cidades">
-                            <option value="Araras">Araras</option>
-                            <option value="Rio Claro">Rio Claro</option>
-                            <option value="Campinas">Campinas</option>
-                            <option value="Outra Cidade (SP)">Outra Cidade (SP)</option>
-                        </optgroup>
-                    </select>
+                    <label for="cidadeDenuncia" class="campo-label">Município / Cidade do Fato</label>
+                    <div class="autocomplete-wrap">
+                        <input type="text" id="cidadeDenuncia" name="cidade" required autocomplete="off"
+                               role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="listaMunicipiosDenuncia"
+                               class="campo"
+                               placeholder="Digite o município, ex.: Araraquara - SP (obrigatório)"
+                               value="{{ request.form.get('cidade', '') }}">
+                        <div id="listaMunicipiosDenuncia" role="listbox" class="hidden autocomplete-dropdown"></div>
+                    </div>
+                    <p class="text-[11px] text-slate-400 mt-1">Selecione qualquer um dos 5.570 municípios brasileiros na lista.</p>
                 </div>
 
                 <div>
-                    <label for="bairroDenuncia" class="campo-label">Bairro / Unidade / Filial *</label>
+                    <label for="bairroDenuncia" class="campo-label">Bairro / Unidade / Filial</label>
                     <input type="text" id="bairroDenuncia" name="bairro" required
-                           class="campo" placeholder="Ex.: Vila Xavier, Centro, Maurício Galli, Irajá..."
+                           class="campo" placeholder="Ex.: Vila Xavier, Centro... (obrigatório)"
                            value="{{ request.form.get('bairro', '') }}">
-                    <p class="text-[11px] text-slate-400 mt-1">Especifique o bairro para diferenciar unidades (ex: Savegnago da Vila Xavier vs Bento).</p>
+                    <p class="text-[11px] text-slate-400 mt-1">Especifique o bairro para diferenciar unidades da mesma empresa.</p>
                 </div>
-            </div>
-
-            <div id="campoOutraCidadeDenuncia" class="hidden">
-                <label for="cidade_outra_denuncia" class="campo-label">Nome da Cidade (SP) *</label>
-                <input type="text" id="cidade_outra_denuncia" name="cidade_outra"
-                       class="campo text-xs" placeholder="Digite o nome da cidade">
             </div>
 
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div class="sm:col-span-2">
-                    <label for="assunto" class="campo-label">Assunto da Ocorrência *</label>
+                    <label for="assunto" class="campo-label">Assunto da Ocorrência</label>
                     <input type="text" id="assunto" name="assunto" required
-                           class="campo" placeholder="Ex.: Produto adulterado, cobrança indevida, local insalubre..."
+                           class="campo" placeholder="Ex.: Produto vencido, cobrança indevida... (obrigatório)"
                            value="{{ request.form.get('assunto', '') }}">
                 </div>
 
                 <div>
-                    <label for="categoria" class="campo-label">Categoria</label>
+                    <label for="categoria" class="campo-label">Categoria (opcional)</label>
                     <select id="categoria" name="categoria" class="campo">
                         <option value="Geral">Geral</option>
                         <option value="Local">Local / Estabelecimento</option>
@@ -100,16 +68,16 @@
             </div>
 
             <div>
-                <label for="descricao" class="campo-label">Detalhamento dos Fatos *</label>
+                <label for="descricao" class="campo-label">Detalhamento dos Fatos</label>
                 <textarea id="descricao" name="descricao" rows="5" required
-                          class="campo" placeholder="Descreva cronologicamente o que ocorreu, data, horário, localidade e impactos observados...">{{ request.form.get('descricao', '') }}</textarea>
+                          class="campo" placeholder="Descreva o que ocorreu, data, horário e local... (obrigatório)">{{ request.form.get('descricao', '') }}</textarea>
                 <p class="text-[11px] text-slate-400 mt-1">
-                    * Descreva datas, horários e detalhes com clareza para facilitar a verificação da ocorrência.
+                    Descreva datas, horários e detalhes com clareza para facilitar a verificação.
                 </p>
             </div>
 
             <div>
-                <label for="anexo" class="campo-label">Prova Documental (Foto, Comprovante ou Vídeo)</label>
+                <label for="anexo" class="campo-label">Prova Documental (opcional — Foto, Comprovante ou Vídeo)</label>
                 <input type="file" id="anexo" name="anexo" accept=".png,.jpg,.jpeg,.webp,.pdf,.mp4"
                        class="campo-arquivo">
                 <p class="text-[11px] text-slate-400 mt-1">
@@ -118,52 +86,10 @@
                 <div id="preview-anexo" class="hidden mt-3"></div>
             </div>
 
-            <!-- CONTRATO DE DECLARAÇÃO E RESPONSABILIDADE LEGAL (SCROLL-TO-AGREE) -->
-            <div class="contrato-card">
-                <div class="flex items-center justify-between mb-2">
-                    <span class="text-xs font-mono font-bold text-rose-400 uppercase tracking-wider flex items-center gap-1.5">
-                        Termo de Declaração de Veracidade e Responsabilidade Legal
-                    </span>
-                    <span class="text-[10px] font-mono text-slate-400">Obrigatório</span>
-                </div>
-
-                <div class="contrato-scrollbox" id="contratoScroll">
-                    <p class="mb-2 font-semibold text-rose-300">
-                        LEIA ATENTAMENTE ESTE INSTRUMENTO ANTES DE CONCLUIR SEU REGISTRO:
-                    </p>
-                    <p class="mb-2">
-                        1. <strong>Declaração de Veracidade:</strong> Ao submeter esta denúncia através da plataforma <strong>ProtejaJá</strong>, eu declaro, sob as penas do <strong>art. 299</strong> (Falsidade Ideológica) e do <strong>art. 340</strong> (Comunicação Falsa de Crime ou Contravenção) do <strong>Código Penal Brasileiro (Decreto-Lei nº 2.848/1940)</strong>, que todas as informações prestadas e eventuais documentos/mídias anexados refletem com estrita exatidão os fatos por mim vivenciados ou constatados.
-                    </p>
-                    <p class="mb-2">
-                        2. <strong>Vedação à Calúnia, Difamação e Injúria:</strong> Estou plenamente ciente de que a imputação de fato falso tipificado como crime ou de fato ofensivo à reputação de terceiros, desprovido de fundamento ou de boa-fé, enseja responsabilização civil e criminal por Calúnia (art. 138), Difamação (art. 139) e Injúria (art. 140) do Código Penal.
-                    </p>
-                    <p class="mb-2">
-                        3. <strong>Marco Civil da Internet (Lei nº 12.965/2014):</strong> Compreendo que os registros de acesso, endereço IP, carimbos de data/hora e metadados desta transação serão mantidos em sigilo e em conformidade estrita com a legislação vigente, podendo ser requisitados por autoridade judicial competente em caso de apuração de ilícitos.
-                    </p>
-                    <p class="mb-2">
-                        4. <strong>Análise de Diretrizes e Publicação (Até 24 Horas):</strong> Declaro estar ciente de que a denúncia será encaminhada para conferência prévia e verificação de provas, sendo publicada em até 24 horas caso cumpra integralmente as diretrizes comunitárias e os padrões de respeito mútuo.
-                    </p>
-                    <p>
-                        5. <strong>Conclusão e Aceite:</strong> Declaro ter lido integralmente o presente instrumento, assumindo de forma livre, expressa e irrevogável todas as responsabilidades civis, administrativas e criminais decorrentes do envio deste relato.
-                    </p>
-                </div>
-
-                <div id="avisoScroll" class="contrato-aviso-scroll">
-                    <span>Role o texto até o final para desbloquear a confirmação de responsabilidade.</span>
-                </div>
-
-                <div class="mt-4 pt-3 border-t border-slate-800/80 flex items-start gap-3 opacity-50 pointer-events-none transition-opacity duration-300" id="checkWrapper">
-                    <input type="checkbox" id="checkTermo" name="termo_responsabilidade" value="1" disabled class="checkbox-cyber mt-0.5">
-                    <label for="checkTermo" class="text-xs text-slate-300 leading-snug cursor-pointer select-none">
-                        <strong>Confirmo e concordo integralmente</strong> com o Termo de Declaração de Veracidade e Responsabilidade Legal, atestando a autenticidade dos fatos narrados.
-                    </label>
-                </div>
-            </div>
-
-            <!-- BOTÃO DE SUBMISSÃO -->
-            <button type="submit" id="btnEnviarDenuncia" disabled
-                    class="btn-grande w-full opacity-50 cursor-not-allowed transition-all font-bold tracking-wide">
-                Concordar e Enviar Denúncia
+            <!-- BOTÃO PARA AVANÇAR AO TERMO DE RESPONSABILIDADE -->
+            <button type="submit" id="btnAvancarTermo"
+                    class="btn-cyber-primary btn-grande w-full transition-all font-bold tracking-wide">
+                Continuar para o Termo de Responsabilidade &rarr;
             </button>
         </form>
     </div>
@@ -239,4 +165,16 @@
         {% endif %}
     </div>
 </section>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="{{ url_for('home_static', filename='js/municipios-autocomplete.js', v='2') }}" defer></script>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    if (window.ProtejaMunicipios) {
+        window.ProtejaMunicipios.init("cidadeDenuncia", "listaMunicipiosDenuncia", { requireSelection: true });
+    }
+});
+</script>
 {% endblock %}
