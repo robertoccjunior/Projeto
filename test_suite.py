@@ -1,7 +1,7 @@
 """
 PROTEJAJÁ // SUÍTE DE TESTES E AUDITORIA COMPLETA
 Validação automatizada de Requisitos Funcionais (RF01 - RF14),
-Requisitos Não Funcionais (RNF01 - RNF09), Casos de Uso e Motor RAG.
+Requisitos Não Funcionais (RNF01 - RNF10) e Casos de Uso.
 """
 
 import io
@@ -15,9 +15,7 @@ BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, os.path.join(BASE_DIR, "backend"))
 
 import database as db
-import fact_checker
 import profanity
-import rag_engine
 from app import create_app
 
 
@@ -56,7 +54,7 @@ class ProtejaJaTestSuite(unittest.TestCase):
     # ==========================================================
 
     def test_02_RF01_cadastro_nome_sobrenome_obrigatorios(self):
-        """RF01: Cadastro exige nome e sobrenome separados, e-mail, data_nasc, cidade e senha (sem exigência de endereço)."""
+        """RF01: Cadastro exige nome e sobrenome separados, e-mail, data_nasc, cidade, senha forte e confirmação."""
         res_sem_sobrenome = self.client.post(
             "/cadastro",
             data={
@@ -65,11 +63,44 @@ class ProtejaJaTestSuite(unittest.TestCase):
                 "email": "sem_sobrenome@teste.com",
                 "data_nascimento": "1990-01-01",
                 "cidade": "Araraquara - SP",
-                "senha": "senhaSegura123",
+                "senha": "SenhaSegura123",
+                "confirmar_senha": "SenhaSegura123",
             },
             follow_redirects=True,
         )
         self.assertIn(b"Preencha todos os campos do cadastro", res_sem_sobrenome.data)
+
+        # Senha fraca (sem maiúscula ou < 8 caracteres) deve ser rejeitada
+        res_senha_fraca = self.client.post(
+            "/cadastro",
+            data={
+                "nome": "Carlos",
+                "sobrenome": "Oliveira",
+                "email": "fraca@teste.com",
+                "data_nascimento": "1990-01-01",
+                "cidade": "Araraquara - SP",
+                "senha": "senha123",
+                "confirmar_senha": "senha123",
+            },
+            follow_redirects=True,
+        )
+        self.assertIn("mínimo 8 caracteres".encode("utf-8"), res_senha_fraca.data)
+
+        # Senhas divergentes devem ser rejeitadas
+        res_divergente = self.client.post(
+            "/cadastro",
+            data={
+                "nome": "Carlos",
+                "sobrenome": "Oliveira",
+                "email": "divergente@teste.com",
+                "data_nascimento": "1990-01-01",
+                "cidade": "Araraquara - SP",
+                "senha": "SenhaSegura123",
+                "confirmar_senha": "OutraSenha123",
+            },
+            follow_redirects=True,
+        )
+        self.assertIn("As senhas não conferem".encode("utf-8"), res_divergente.data)
 
         # Cadastro válido SEM fornecer endereço (campo removido da tela de cadastro para proteção de dados)
         email_valido = f"user_rf01_{int(time.time() * 1000)}@teste.com"
@@ -81,7 +112,8 @@ class ProtejaJaTestSuite(unittest.TestCase):
                 "email": email_valido,
                 "data_nascimento": "1990-01-01",
                 "cidade": "Araraquara - SP",
-                "senha": "senhaSegura123",
+                "senha": "SenhaSegura123",
+                "confirmar_senha": "SenhaSegura123",
             },
             follow_redirects=True,
         )
@@ -90,8 +122,8 @@ class ProtejaJaTestSuite(unittest.TestCase):
         self.assertIsNotNone(user)
         self.assertEqual(user["nome"], "Carlos Oliveira")
 
-    def test_03_RF02_RNF02_criptografia_senhas(self):
-        """RF02 & RNF02: Senha criptografada antes de gravar no banco, nunca em texto puro."""
+    def test_03_RNF02_criptografia_senhas(self):
+        """RNF02: Senha criptografada antes de gravar no banco, nunca em texto puro."""
         email = f"user_hash_{int(time.time() * 1000)}@teste.com"
         senha_pura = "MinhaSenhaSuperSecreta!123"
         self.client.post(
@@ -104,6 +136,7 @@ class ProtejaJaTestSuite(unittest.TestCase):
                 "cidade": "São Carlos - SP",
                 "endereco": "Av Brasil, 500",
                 "senha": senha_pura,
+                "confirmar_senha": senha_pura,
             },
             follow_redirects=True,
         )
@@ -113,10 +146,10 @@ class ProtejaJaTestSuite(unittest.TestCase):
         self.assertTrue(user["senha_hash"].startswith("scrypt:"))
         self.assertTrue(check_password_hash(user["senha_hash"], senha_pura))
 
-    def test_04_RF03_RF04_login_logout(self):
-        """RF03 & RF04: Login com validação e encerramento de sessão com segurança."""
+    def test_04_RF02_RF03_login_logout(self):
+        """RF02 & RF03: Login com validação, ausência de recuperação de senha e logout seguro."""
         email = f"user_log_{int(time.time() * 1000)}@teste.com"
-        senha = "senhaCorreta123"
+        senha = "SenhaCorreta123"
         self.client.post(
             "/cadastro",
             data={
@@ -127,9 +160,16 @@ class ProtejaJaTestSuite(unittest.TestCase):
                 "cidade": "Ribeirão Preto - SP",
                 "endereco": "Rua 15, 200",
                 "senha": senha,
+                "confirmar_senha": senha,
             },
             follow_redirects=True,
         )
+        res_login_get = self.client.get("/login")
+        html_login = res_login_get.data.decode("utf-8")
+        self.assertNotIn("/recuperar", html_login)
+        self.assertNotIn("Esqueceu sua senha?", html_login)
+        self.assertEqual(self.client.get("/recuperar").status_code, 404)
+
         res_erro = self.client.post("/login", data={"email": email, "senha": "senhaErrada"}, follow_redirects=True)
         self.assertIn(b"E-mail ou senha incorretos", res_erro.data)
 
@@ -138,48 +178,6 @@ class ProtejaJaTestSuite(unittest.TestCase):
 
         res_logout = self.client.get("/logout", follow_redirects=True)
         self.assertIn(b"finalizada com seguran", res_logout.data)
-
-    def test_05_RF05_recuperacao_senha(self):
-        """RF05: Recuperação segura por código OTP de 6 dígitos enviado ao e-mail (nunca exposto na tela)."""
-        email = f"user_recup_{int(time.time() * 1000)}@teste.com"
-        self.client.post(
-            "/cadastro",
-            data={
-                "nome": "Paula",
-                "sobrenome": "Teixeira",
-                "email": email,
-                "data_nascimento": "1995-12-05",
-                "cidade": "Araraquara - SP",
-                "endereco": "Rua 9 de Julho, 1200",
-                "senha": "senhaOriginal123",
-            },
-            follow_redirects=True,
-        )
-        # Etapa 1: solicita código (resposta genérica, sem vazar senha/código no HTML)
-        res_solicitar = self.client.post("/recuperar", data={"acao": "solicitar", "email": email}, follow_redirects=True)
-        self.assertEqual(res_solicitar.status_code, 200)
-        self.assertNotIn(b"NOVA SENHA GERADA PARA:", res_solicitar.data)
-        self.assertIn("código de verificação de 6 dígitos".encode("utf-8"), res_solicitar.data)
-
-        # Etapa 2a: código inválido não altera a senha
-        res_falha = self.client.post(
-            "/recuperar",
-            data={"acao": "redefinir", "email": email, "codigo": "000000", "nova_senha": "novaSenhaSegura123"},
-            follow_redirects=True,
-        )
-        self.assertIn("Código inválido ou expirado".encode("utf-8"), res_falha.data)
-
-        # Etapa 2b: código válido redefine a senha com sucesso
-        user = db.usuario_por_email(email)
-        db.criar_codigo_recuperacao(user["id"], generate_password_hash("654321"), int(time.time()) + 600)
-        res_ok = self.client.post(
-            "/recuperar",
-            data={"acao": "redefinir", "email": email, "codigo": "654321", "nova_senha": "novaSenhaSegura123"},
-            follow_redirects=True,
-        )
-        self.assertIn(b"Senha redefinida com sucesso", res_ok.data)
-        user_atualizado = db.usuario_por_email(email)
-        self.assertTrue(check_password_hash(user_atualizado["senha_hash"], "novaSenhaSegura123"))
 
     def test_06_RF12_exclusao_definitiva_conta_e_provas(self):
         """RF12: Excluir conta definitivamente (cadastro, denúncias e provas físicas) com senha."""
@@ -319,7 +317,8 @@ class ProtejaJaTestSuite(unittest.TestCase):
                 "data_nascimento": "1990-01-01",
                 "cidade": "Araraquara - SP",
                 "endereco": "Rua 1",
-                "senha": "senha123",
+                "senha": "SenhaSegura123",
+                "confirmar_senha": "SenhaSegura123",
             },
             follow_redirects=True,
         )
@@ -382,33 +381,29 @@ class ProtejaJaTestSuite(unittest.TestCase):
         self.assertEqual(dados["score_confianca"], 0.75)
 
     # ==========================================================
-    # 5. NOVO RECURSO: CHECAGEM DE FATOS & MOTOR RAG NATIVO
+    # 5. PORTAL DE NOTÍCIAS E REMOÇÃO DE FATO OU FAKE / RAG
     # ==========================================================
 
-    def test_12_fato_ou_fake_com_auditoria_automatizada(self):
-        """Valida página /noticias (Portal de Notícias e Alertas) e API /api/v1/checar-fato."""
+    def test_12_portal_noticias_e_remocao_fato_ou_fake(self):
+        """Valida página /noticias (Portal de Notícias e Alertas) e remoção de /fato-ou-fake e /api/v1/checar-fato."""
         res_pagina = self.client.get("/noticias")
         self.assertEqual(res_pagina.status_code, 200)
         self.assertIn(b"Portal de Not\xc3\xadcias e Alertas", res_pagina.data)
         self.assertIn(b"Not\xc3\xadcias e Alertas Recentes", res_pagina.data)
 
-        # Teste de checagem com recuperação e fundamentação oficial
-        res_api = self.client.post("/api/v1/checar-fato", json={
-            "texto": "Receita Federal vai começar a cobrar imposto no Pix"
-        })
-        self.assertEqual(res_api.status_code, 200)
-        dados = res_api.get_json()
-        self.assertTrue(dados.get("sucesso"))
-        self.assertIn("status", dados)
-        self.assertIn("parecer", dados)
+        self.assertEqual(self.client.get("/fato-ou-fake").status_code, 404)
+        self.assertEqual(
+            self.client.post("/api/v1/checar-fato", json={"texto": "teste"}).status_code,
+            404,
+        )
 
     # ==========================================================
-    # 6. REQUISITOS NÃO FUNCIONAIS (RNF01 - RNF09) & SEO
+    # 6. REQUISITOS NÃO FUNCIONAIS (RNF01 - RNF10) & SEO
     # ==========================================================
 
     def test_13_RNF01_desempenho_rotas_principais(self):
         """RNF01: Resposta em poucos segundos (localmente < 500ms)."""
-        rotas = ["/home", "/denuncias-publicas", "/fato-ou-fake", "/login", "/cadastro"]
+        rotas = ["/home", "/denuncias-publicas", "/noticias", "/login", "/cadastro"]
         for r in rotas:
             t0 = time.time()
             res = self.client.get(r)
@@ -515,71 +510,6 @@ class ProtejaJaTestSuite(unittest.TestCase):
         self.assertIn("status-alerta", html_home)
         self.assertIn("grid-template-columns:repeat(auto-fit,minmax(280px,1fr))", html_home.replace(" ", ""))
 
-    def test_18_agentic_web_search_pipeline(self):
-        """Valida o pipeline de Agentic Web Search em tempo real com Filtro de Autoridade e schema JSON."""
-        from agentic_checker import processar_entrada_usuario, RESULTADO_INCONCLUSIVO_PADRAO
-
-        # 1. Validação de contrato estruturado
-        resultado = processar_entrada_usuario("Boato sobre confisco da poupança")
-        self.assertIn("status", resultado)
-        self.assertIn(resultado["status"], ("fato", "fake", "alerta", "inconclusivo"))
-        self.assertIsInstance(resultado["confianca"], int)
-        self.assertIsInstance(resultado["parecer"], str)
-        self.assertIn("fonte_recomendada", resultado)
-        self.assertIn("nome", resultado["fonte_recomendada"])
-        self.assertIn("url", resultado["fonte_recomendada"])
-
-        # 2. Validação da Regra de Ouro: boato local sem cobertura vira INCONCLUSIVO
-        res_local = processar_entrada_usuario("O cachorro do Zé da esquina voou em Piracicaba às 3h")
-        self.assertEqual(res_local["status"], "inconclusivo")
-        self.assertEqual(res_local["fonte_recomendada"]["nome"], "Inexistente")
-        self.assertIsNone(res_local["fonte_recomendada"]["url"])
-
-        # 3. Validação de robustez contra exceções / entrada vazia
-        res_vazia = processar_entrada_usuario("")
-        self.assertEqual(res_vazia["status"], "inconclusivo")
-
-        # 4. Validação da API REST /api/v1/checar-fato
-        res_api = self.client.post("/api/v1/checar-fato", json={"texto": "Confisco da poupança"})
-        self.assertEqual(res_api.status_code, 200)
-        dados = res_api.get_json()
-        self.assertTrue(dados.get("sucesso"))
-        self.assertIn("status", dados)
-        self.assertIn("confianca", dados)
-        self.assertIn("fonte_recomendada", dados)
-
-    def test_19_protecao_propriedade_intelectual_e_blackbox_copywriting(self):
-        """Valida que todos os jargões técnicos de IA/RAG foram expurgados do Backend e Frontend."""
-        import json
-        import fact_checker
-
-        # 1. Validação de caixa-preta no Backend (analisar_fato)
-        resultado = fact_checker.analisar_fato("O governo vai confiscar a poupança nesta semana")
-        self.assertTrue(resultado.get("sucesso"))
-        self.assertEqual(resultado.get("origem"), "Motor de Verificação Proteja-Já")
-
-        resultado_json = json.dumps(resultado, ensure_ascii=False).lower()
-        self.assertNotIn("rag", resultado_json)
-        self.assertNotIn("agentic", resultado_json)
-        self.assertNotIn("filtro de autoridade", resultado_json)
-        self.assertNotIn("algoritmo", resultado_json)
-        self.assertNotIn("heurística", resultado_json)
-        self.assertNotIn("pesquisa web em tempo real", resultado_json)
-
-        # 2. Validação de copywriting institucional no Frontend (/fato-ou-fake)
-        res_fake = self.client.get("/fato-ou-fake")
-        self.assertEqual(res_fake.status_code, 200)
-        html_fake = res_fake.data.decode("utf-8")
-
-        self.assertNotIn("Validar Notícia Agora com RAG", html_fake)
-        self.assertNotIn("Inteligência RAG", html_fake)
-        self.assertNotIn("Inteligência Factual", html_fake)
-        self.assertNotIn("Validação RAG", html_fake)
-        self.assertNotIn("Evidência RAG recuperada", html_fake)
-
-        self.assertIn("Portal de Notícias e Alertas", html_fake)
-        self.assertIn("Notícias e Alertas Recentes", html_fake)
-
     def test_20_autocomplete_municipios_ibge_e_validacao(self):
         """Valida endpoint /api/municipios (<100ms, 5.570 municípios IBGE) e cadastro/denúncia nacional."""
         for prefixo, esperado in [
@@ -605,7 +535,8 @@ class ProtejaJaTestSuite(unittest.TestCase):
                 "email": f"inv_mun_{int(time.time()*1000)}@t.com",
                 "data_nascimento": "1995-03-10",
                 "cidade": "Cidade Inventada - XX",
-                "senha": "senha123",
+                "senha": "SenhaSegura123",
+                "confirmar_senha": "SenhaSegura123",
             },
             follow_redirects=True,
         )
@@ -621,7 +552,8 @@ class ProtejaJaTestSuite(unittest.TestCase):
                 "email": email_pr,
                 "data_nascimento": "1995-03-10",
                 "cidade": "Curitiba - PR",
-                "senha": "senha123",
+                "senha": "SenhaSegura123",
+                "confirmar_senha": "SenhaSegura123",
             },
             follow_redirects=True,
         )
@@ -660,36 +592,39 @@ class ProtejaJaTestSuite(unittest.TestCase):
                 "email": email_menor,
                 "data_nascimento": menor_data,
                 "cidade": "São Paulo - SP",
-                "senha": "senha123",
+                "senha": "SenhaSegura123",
+                "confirmar_senha": "SenhaSegura123",
             },
             follow_redirects=True,
         )
         self.assertIn(b"maiores de 18 anos", res.data)
         self.assertIsNone(db.usuario_por_email(email_menor))
 
-    def test_22_fato_ou_fake_texto_imagem_link_sem_audio_e_campos_obrigatorios(self):
-        """Valida remoção completa de Fato ou Fake da UI, Portal de Notícias ativo e rótulos obrigatórios."""
+    def test_22_campos_obrigatorios_asterisco_vermelho_e_portal_noticias(self):
+        """Valida Portal de Notícias ativo e asterisco vermelho (*) nos campos obrigatórios dos formulários."""
         res_not = self.client.get("/noticias")
         html_not = res_not.data.decode("utf-8")
         self.assertIn("Portal de Notícias e Alertas", html_not)
         self.assertIn("Golpes e Fraudes", html_not)
         self.assertIn("Impostos e Dinheiro Público", html_not)
         self.assertNotIn("Verificar Fatos Agora", html_not)
-        self.assertNotIn("speechSynthesis", html_not)
-        self.assertNotIn("MediaRecorder", html_not)
-        self.assertNotIn("gravadorNativo", html_not)
-        self.assertNotIn("arquivoImagem", html_not)
 
-        # Link inválido deve retornar 400
-        res_link_inv = self.client.post("/api/v1/checar-fato", json={"link": "ftp://invalido"})
-        self.assertEqual(res_link_inv.status_code, 400)
-
-        # Rótulos/placeholders explícitos de obrigatoriedade
-        for rota in ["/cadastro", "/login", "/recuperar"]:
+        asterisco = '<span style="color:#ef4444" aria-hidden="true">*</span>'
+        for rota in ["/cadastro", "/login"]:
             html = self.client.get(rota).data.decode("utf-8")
-            self.assertIn("(obrigatório)", html)
-        html_rec = self.client.get("/recuperar").data.decode("utf-8")
-        self.assertNotIn("data_nascimento", html_rec)
+            self.assertIn(asterisco, html)
+
+        html_cad = self.client.get("/cadastro").data.decode("utf-8")
+        self.assertIn('name="confirmar_senha"', html_cad)
+        self.assertIn('minlength="8"', html_cad)
+
+        # Rotas autenticadas (/denuncias e /excluir-conta) também exibem asterisco vermelho
+        admin = db.usuario_por_email(db.ADMIN_EMAIL)
+        with self.client.session_transaction() as sess:
+            sess["user_id"] = admin["id"]
+        for rota_auth in ["/denuncias", "/excluir-conta"]:
+            html_auth = self.client.get(rota_auth).data.decode("utf-8")
+            self.assertIn(asterisco, html_auth)
 
     def test_23_curtidas_ranking_e_comentarios_publicos(self):
         """Valida curtida ('Também fui afetado'), ranking e comentários com login obrigatório e filtro antiofensa."""

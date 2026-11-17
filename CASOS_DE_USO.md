@@ -1,6 +1,6 @@
 # CASOS DE USO — ProtejaJA
 
-**Projeto Integrador · Flask + SQLite + Tailwind CSS (Inlined) + RAG**
+**Projeto Integrador · Flask + SQLite + Tailwind CSS (Inlined)**
 
 ## 1. Diagrama (visão geral)
 
@@ -11,8 +11,7 @@
                  │
                  │  UC01 Cadastrar-se (sem exigência de endereço)
                  │  UC02 Entrar (login)
-                 │  UC03 Recuperar senha
-                 │  UC09 Checar fatos com texto/link/imagem (Fato ou Fake)
+                 │  UC09 Consultar Portal de Notícias e Alertas
                  │  UC11 Consultar feed comunitário com tags
                  │  UC14 Acessar telefones de emergência 24h
                  ▼
@@ -48,15 +47,14 @@
 
 | Código | Caso de uso | Ator principal | Objetivo |
 |---|---|---|---|
-| **UC01** | Cadastrar-se | Visitante | Criar conta (18+ anos) com nome, sobrenome, e-mail, data de nascimento, município (`Cidade - UF` via IBGE) e senha (sem exigir endereço residencial) |
+| **UC01** | Cadastrar-se | Visitante | Criar conta (18+ anos) com nome, sobrenome, e-mail, data de nascimento, município (`Cidade - UF` via IBGE), senha forte (mín. 8 caracteres, 1 maiúscula e 1 minúscula) e confirmação de senha (sem exigir endereço residencial) |
 | **UC02** | Entrar | Visitante | Acessar a conta com e-mail e senha com sessão segura |
-| **UC03** | Recuperar senha | Visitante | Redefinir senha com código de verificação de 6 dígitos (OTP) enviado ao e-mail cadastrado |
 | **UC04** | Enviar denúncia | Usuário | Registrar quem está denunciando, o quê, categoria, cidade, bairro e descrição |
 | **UC05** | Anexar prova | Usuário | Enviar imagem/PDF/vídeo (máx. 5 MB) junto à denúncia |
 | **UC06** | Ver minhas denúncias | Usuário | Listar apenas as denúncias da própria conta em painel privativo |
 | **UC07** | Ver detalhes de uma denúncia | Usuário | Abrir uma denúncia e ver a prova anexada e parecer de moderação |
 | **UC08** | Sair | Usuário | Encerrar a sessão com segurança |
-| **UC09** | Checagem de Fatos (Fato ou Fake) | Visitante / Usuário | Colar texto, informar link de notícia ou enviar imagem/print para verificação com motor RAG nativo |
+| **UC09** | Consultar Portal de Notícias | Visitante / Usuário | Visualizar notícias e alertas filtrados por tema (`/noticias`) |
 | **UC10** | Moderar denúncias | Administrador | Analisar ocorrências no painel admin e aprovar para publicação ou rejeitar |
 | **UC11** | Consultar feed público de denúncias | Visitante | Navegar pelo blog comunitário de ocorrências auditadas com filtros por tags |
 | **UC12** | Excluir conta e dados (LGPD) | Usuário | Excluir definitivamente cadastro, denúncias e apagar fotos do disco com senha |
@@ -70,7 +68,7 @@
 ### UC01 — Cadastrar-se (Minimização de Dados LGPD e Maioridade 18+)
 
 1. Visitante clica em **Cadastrar**.
-2. Preenche os campos marcados como `* (obrigatório)`: primeiro nome, sobrenome, e-mail, data de nascimento (validando idade mínima de **18 anos**), seleciona qualquer um dos 5.570 municípios brasileiros no autocomplete IBGE (`Cidade - UF`) e cria uma senha forte (mínimo 6 caracteres).
+2. Preenche os campos marcados como `*` (vermelho): primeiro nome, sobrenome, e-mail, data de nascimento (validando idade mínima de **18 anos**), seleciona qualquer um dos 5.570 municípios brasileiros no autocomplete IBGE (`Cidade - UF`), cria uma senha forte (mínimo 8 caracteres, com pelo menos 1 letra maiúscula e 1 minúscula) e repete no campo de confirmação.
 3. O sistema valida maioridade (>= 18 anos), município oficial do IBGE, campos obrigatórios e aplica o filtro antiofensa.
 4. **Nota de conformidade:** O endereço residencial não é solicitado, protegendo a privacidade física do cidadão.
 5. Sistema grava a senha com hash `scrypt` e redireciona para o login com mensagem de sucesso.
@@ -88,13 +86,6 @@
 9. Clica em **Enviar denúncia**.
 10. Ocorrência é registrada com status `EM_ANALISE_IA` e enviada à moderação.
 
-### UC09 — Checagem de Fatos com RAG (Fato ou Fake)
-
-1. Usuário acessa `/fato-ou-fake`.
-2. Seleciona a aba **Colar Texto / Boato**, **Link de Notícia** (URL) ou **Enviar Imagem / Print** (com legenda recomendada).
-3. Clica em **Verificar Agora**.
-4. O sistema consulta a base oficial em SQLite FTS5 e retorna o veredito (Fato, Fake ou Alerta) acompanhado de evidências e links de fontes oficiais.
-
 ### UC12 — Excluir conta definitivamente (LGPD)
 
 1. Usuário acessa `/excluir-conta`.
@@ -107,4 +98,4 @@
 ## 4. Fontes dos Casos de Uso
 
 Rotas implementadas no back-end (`backend/app.py`):
-- `/cadastro`, `/login`, `/recuperar`, `/denuncias`, `/logout`, `/fato-ou-fake`, `/admin`, `/denuncias-publicas`, `/excluir-conta`, `/api/municipios`, `/api/v1/checar-fato`.
+- `/cadastro`, `/login`, `/denuncias`, `/logout`, `/noticias`, `/admin`, `/denuncias-publicas`, `/excluir-conta`, `/api/municipios`.

@@ -1,6 +1,6 @@
 # ProtejaJA — Documentação Técnica
 
-Projeto integrador de plataforma cidadã de denúncias seguras e checagem de fatos comunitária. Este documento descreve a visão geral do sistema, a arquitetura utilizada, as funcionalidades implementadas, as medidas de segurança e conformidade (LGPD), a documentação do banco de dados e a infraestrutura de execução.
+Projeto integrador de plataforma cidadã de denúncias seguras e utilidade pública. Este documento descreve a visão geral do sistema, a arquitetura utilizada, as funcionalidades implementadas, as medidas de segurança e conformidade (LGPD), a documentação do banco de dados e a infraestrutura de execução.
 
 ---
 
@@ -10,14 +10,14 @@ Na sprint atual, o ProtejaJA consolidou sua maturidade técnica com foco em conf
 
 1. **Privacidade e Minimização de Dados (LGPD):** O cadastro foi simplificado, exigindo **nome e sobrenome separados**, e o campo de **endereço residencial foi removido** do formulário de registro, reduzindo a coleta de dados ao estritamente necessário. A exclusão de conta expurga definitivamente cadastro, denúncias e arquivos de prova do disco.
 2. **Moderação & Inteligência de Triagem:** O painel do administrador permite aprovar ou rejeitar cada denúncia; apenas as aprovadas são indexadas no feed público com tags. Adicionalmente, foi implementada uma API REST para robôs de triagem de IA com score de confiança.
-3. **Checagem de Fatos em Tempo Real (Fato ou Fake com RAG Nativo):** Motor de recuperação em base SQLite FTS5 contendo decisões e normas de órgãos oficiais (Banco Central, Anvisa, Procon, Receita Federal) com suporte a transcrição de áudio do WhatsApp.
+3. **Portal de Notícias e Alertas (`/noticias`):** Central informativa com notícias e alertas sobre golpes, impostos, dinheiro público e direitos do consumidor.
 4. **Performance e Acessibilidade Máximas (Lighthouse 98-100):** Eliminação de dependência de CDN de Tailwind, migrando para CSS crítico minificado e inlined diretamente no `<head>`, com JavaScript deferido e tema Dark Neon com conformidade WCAG AAA (nota 100 em Acessibilidade e SEO).
 
 ---
 
 ## 1. Visão Geral
 
-**ProtejaJA** é uma plataforma comunitária de utilidade pública com **abrangência nacional (todos os 5.570 municípios do Brasil)** para registro e fiscalização de ocorrências contra estabelecimentos, produtos e serviços, além de dispor de canal de checagem contra boatos em tempo real.
+**ProtejaJA** é uma plataforma comunitária de utilidade pública com **abrangência nacional (todos os 5.570 municípios do Brasil)** para registro e fiscalização de ocorrências contra estabelecimentos, produtos e serviços.
 
 - **Autor da denúncia:** usuário cidadão autenticado.
 - **Autor do fato denunciado:** estabelecimento comercial, empresa ou prestador de serviços.
@@ -31,9 +31,8 @@ Na sprint atual, o ProtejaJA consolidou sua maturidade técnica com foco em conf
 |---|---|---|---|
 | Front-end | HTML5 Semântico + CSS3 / Tailwind Local | Inlined no `<head>` (`styles.min.css`) | Interface de alta fidelidade visual, zero bloqueio de rede (0ms RTT) |
 | Client Scripts | JavaScript Vanilla Minificado | `home.min.js` com `defer` | Visualização de provas, menu responsivo, controle de áudio e scroll |
-| Back-end | Python + Flask | Python 3.14 / Flask 3.1 | Regras de negócio, segurança, rotas e APIs REST |
-| IA & RAG | SQLite FTS5 (Full-Text Search) + Heurísticas | Nativo / Stdlib Python | Recuperação semântica e verificação de veracidade factual |
-| Banco de dados | SQLite 3 | Nativo com WAL & Foreign Keys | Persistência relacional (`app.db` e `rag_knowledge.db`) |
+| Back-end | Python + Flask | Python 3.12+ / Flask 3.x | Regras de negócio, segurança, rotas e APIs REST |
+| Banco de dados | SQLite 3 | Nativo com WAL & Foreign Keys | Persistência relacional (`app.db`) |
 | Contêiner | Docker | Docker + Docker Compose | Portabilidade e isolamento em contêineres |
 
 ---
@@ -45,8 +44,8 @@ O sistema segue o modelo cliente-servidor com separação nítida de responsabil
 | Camada | Responsabilidade | Arquivos Principais |
 |---|---|---|
 | **Apresentação** | Telas HTML5 responsivas, metadados de SEO/GEO e estilos | `backend/templates/*.html`, `home/css/styles.min.css` |
-| **Negócio & APIs** | Processamento de requisições, segurança, filtro antiofensa e moderação | `backend/app.py`, `backend/profanity.py`, `backend/fact_checker.py` |
-| **Persistência & RAG** | Operações relacionais, migrações de schema e índice invertido FTS5 | `backend/database.py`, `backend/rag_engine.py` |
+| **Negócio & APIs** | Processamento de requisições, segurança, filtro antiofensa e moderação | `backend/app.py`, `backend/profanity.py` |
+| **Persistência** | Operações relacionais e migrações de schema | `backend/database.py` |
 | **Armazenamento** | Banco de dados transacional e provas físicas em disco | `db/app.db`, `backend/uploads/` |
 
 ### Fluxo de uma requisição de denúncia
@@ -68,23 +67,18 @@ Denúncia passa a 'APROVADO' e é disponibilizada no Feed Público
 ### 3.1 Home (Página Inicial)
 - Interface com tema Dark Neon / Cyberpunk (`#070a12`, texto slate/white e realces neon `#ff007f`).
 - Destaques comunitários, estatísticas de utilidade pública e feed das últimas 3 ocorrências auditadas com tags de busca.
-- Ações diretas de acesso, cadastro e checagem de fatos.
+- Ações diretas de acesso, cadastro e consulta de ocorrências.
 
 ### 3.2 Cadastro Cidadão
-- Campos obrigatórios: **Primeiro Nome**, **Sobrenome** (validação separada), **E-mail**, **Data de Nascimento**, **Cidade** e **Senha**.
+- Campos obrigatórios (marcados com `*` vermelho): **Primeiro Nome**, **Sobrenome** (validação separada), **E-mail**, **Data de Nascimento** (18+ anos), **Cidade**, **Senha** (mínimo 8 caracteres, com 1 maiúscula e 1 minúscula) e **Confirmar Senha**.
 - **Minimização de Dados (LGPD):** O campo de endereço residencial (rua, número, logradouro, CEP) foi **removido** do formulário de cadastro, exigindo apenas a cidade de residência do cidadão.
 - Criptografia irreversível da senha (`scrypt`) antes da gravação no banco.
 - Filtro antiofensa imediato em nomes e cidades.
 
 ### 3.3 Login e Sessão
 - Autenticação por e-mail e senha com sessão segura (cookies `HttpOnly` e `SameSite=Lax`).
-- Link de fácil acesso para recuperação de senha.
 
-### 3.4 Recuperação de Senha
-- Confirmação cruzada de e-mail e data de nascimento cadastrada.
-- Geração instantânea de senha temporária segura em caso de correspondência exata.
-
-### 3.5 Registro de Denúncias
+### 3.4 Registro de Denúncias
 - Campos do formulário:
   - **Quem está denunciando:** Nome do estabelecimento, empresa ou pessoa denunciada.
   - **Sobre o quê:** Assunto resumido da ocorrência.
@@ -109,12 +103,10 @@ Denúncia passa a 'APROVADO' e é disponibilizada no Feed Público
 - Exibe exclusivamente relatos previamente **aprovados** pelo administrador.
 - Busca por texto, autocomplete nacional de municípios (`/api/municipios`) e filtragem por tags temáticas com dados estruturados Schema.org (`NewsArticle`).
 
-### 3.9 Checagem de Fatos em Tempo Real (Fato ou Fake com RAG)
-- Página `/fato-ou-fake` e endpoint de API `/api/v1/checar-fato`.
-- Permite colar o texto do boato, informar o **link de uma notícia** (com extração automática de título e conteúdo) ou enviar uma **imagem / print** (com campo de legenda para auditoria).
-- O motor RAG (`backend/rag_engine.py`) consulta uma base de fatos em SQLite com índice FTS5 contendo notas oficiais de Banco Central, Receita Federal, Anvisa, Procon e Ministério da Saúde, emitindo veredito (FATO, FAKE, ALERTA), nível de confiança e lista de fontes verificadas.
+### 3.8 Portal de Notícias e Alertas
+- Página `/noticias` com notícias e alertas filtrados por tema (golpes, impostos, consumidor).
 
-### 3.10 Barra Fixa de Discagem Rápida de Emergência (24h)
+### 3.9 Barra Fixa de Discagem Rápida de Emergência (24h)
 - Barra de utilidade pública presente em todas as páginas com links diretos `tel:`:
   - Polícia Militar: **190**
   - Corpo de Bombeiros: **193**
@@ -185,20 +177,6 @@ CREATE TABLE reports (
 );
 ```
 
-### 5.2 Banco de Conhecimento RAG (`db/rag_knowledge.db`)
-
-Tabela virtual FTS5 para recuperação textual ultrarrápida:
-
-```sql
-CREATE VIRTUAL TABLE IF NOT EXISTS base_conhecimento USING fts5(
-    titulo,
-    conteudo,
-    autoridade,
-    url_fonte,
-    palavras_chave
-);
-```
-
 ---
 
 ## 6. Estrutura de Arquivos
@@ -206,12 +184,11 @@ CREATE VIRTUAL TABLE IF NOT EXISTS base_conhecimento USING fts5(
 | Arquivo / Diretório | Finalidade |
 |---|---|
 | `run.py` | Inicializador da aplicação Flask na porta 5000 |
-| `test_suite.py` | Suíte de testes automatizados completa (16 testes cobrindo RF, RNF, RAG e segurança) |
+| `test_suite.py` | Suíte de testes automatizados completa cobrindo RF, RNF e segurança |
 | `backend/app.py` | Rotas web, APIs REST, middlewares e controladores |
 | `backend/database.py` | Camada de persistência relacional SQLite e migrações |
 | `backend/profanity.py` | Filtro antiofensa e heurísticas de texto |
-| `backend/fact_checker.py` | Lógica de checagem de fatos e orquestração do módulo Fato ou Fake |
-| `backend/rag_engine.py` | Motor RAG com índice FTS5 e fontes oficiais |
+| `backend/news_portal.py` | Agregador de notícias e alertas por categoria |
 | `backend/templates/` | Templates HTML com semântica e acessibilidade WCAG AAA |
 | `home/css/styles.min.css` | Folha de estilos minificada e inlined de alta performance |
 | `home/js/home.min.js` | Bundle client-side minificado (3.6 KiB) com carregamento diferido |

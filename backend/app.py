@@ -3,15 +3,8 @@ import gzip
 import os
 import re
 import secrets
-import smtplib
-import time
-import urllib.error
-import urllib.parse
-import urllib.request
 import uuid
-from email.message import EmailMessage
 from functools import wraps
-from html.parser import HTMLParser
 
 from flask import (
     Flask,
@@ -30,7 +23,6 @@ from werkzeug.security import check_password_hash, generate_password_hash
 from werkzeug.utils import secure_filename
 
 import database as db
-import fact_checker
 import municipios
 import news_portal
 from profanity import contem_ofensa, sanitizar
@@ -42,7 +34,6 @@ UPLOAD_DIR = db.UPLOAD_DIR
 
 BOT_API_KEY = os.environ.get("BOT_API_KEY", "protejaja-bot-secret-key-2026")
 EXTENSOES_PERMITIDAS = {"png", "jpg", "jpeg", "gif", "webp", "heic", "heif", "pdf", "mp4", "mov"}
-IMAGENS_FATO_PERMITIDAS = {"png", "jpg", "jpeg", "gif", "webp"}
 MAX_ANEXO = 5 * 1024 * 1024
 
 CSS_FILE_PATH = os.path.join(HOME_DIR, "css", "styles.min.css")
@@ -57,10 +48,6 @@ if os.path.exists(CSS_FILE_PATH):
 
 def arquivo_permitido(nome):
     return "." in nome and nome.rsplit(".", 1)[1].lower() in EXTENSOES_PERMITIDAS
-
-
-def imagem_fato_permitida(nome):
-    return "." in nome and nome.rsplit(".", 1)[1].lower() in IMAGENS_FATO_PERMITIDAS
 
 
 def data_limite_maioridade() -> str:
@@ -91,130 +78,6 @@ def validar_maioridade(data_str: str) -> tuple[bool, str | None]:
     if idade < 18:
         return False, "Cadastro permitido apenas para maiores de 18 anos."
     return True, None
-
-
-def _enviar_codigo_recuperacao_email(destinatario: str, nome: str, codigo: str) -> bool:
-    """
-    Envia o código OTP de 6 dígitos por SMTP quando configurado (SMTP_HOST).
-    Em ambiente local sem SMTP, registra apenas no log do servidor (nunca na resposta HTTP).
-    """
-    smtp_host = os.environ.get("SMTP_HOST", "").strip()
-    if not smtp_host:
-        print(f"[Recuperacao de Senha - DEV] E-mail: {destinatario} | Codigo OTP: {codigo}")
-        return False
-
-    smtp_port = int(os.environ.get("SMTP_PORT", "587"))
-    smtp_user = os.environ.get("SMTP_USER", "").strip()
-    smtp_pass = os.environ.get("SMTP_PASS", "")
-    smtp_from = os.environ.get("SMTP_FROM", smtp_user or "no-reply@protejaja.com.br")
-
-    msg = EmailMessage()
-    msg["Subject"] = "ProtejaJÁ — Código de recuperação de senha"
-    msg["From"] = smtp_from
-    msg["To"] = destinatario
-    msg.set_content(
-        f"Olá, {nome}.\n\n"
-        f"Seu código de verificação para redefinir sua senha no ProtejaJÁ é: {codigo}\n"
-        "Este código expira em 10 minutos.\n\n"
-        "Se você não solicitou a troca de senha, ignore este e-mail."
-    )
-
-    try:
-        with smtplib.SMTP(smtp_host, smtp_port, timeout=10) as server:
-            server.starttls()
-            if smtp_user and smtp_pass:
-                server.login(smtp_user, smtp_pass)
-            server.send_message(msg)
-        return True
-    except Exception as exc:
-        print(f"[Recuperacao de Senha] Falha ao enviar SMTP: {exc}")
-        return False
-
-
-class _LinkTextExtractor(HTMLParser):
-    """Extrator leve de título, meta descriptions e texto visível de links de notícias."""
-
-    def __init__(self):
-        super().__init__()
-        self._in_title = False
-        self._skip_depth = 0
-        self._in_p_or_h = False
-        self.title = ""
-        self.meta_desc = ""
-        self.chunks = []
-
-    def handle_starttag(self, tag, attrs):
-        tag_l = tag.lower()
-        if tag_l in ("script", "style", "noscript", "svg"):
-            self._skip_depth += 1
-        elif tag_l == "title":
-            self._in_title = True
-        elif tag_l in ("h1", "h2", "p", "article"):
-            self._in_p_or_h = True
-        elif tag_l == "meta":
-            attrs_d = dict((k.lower(), v or "") for k, v in attrs)
-            name = attrs_d.get("name", "").lower()
-            prop = attrs_d.get("property", "").lower()
-            if name in ("description", "twitter:description") or prop in ("og:title", "og:description"):
-                content = attrs_d.get("content", "").strip()
-                if content and content not in self.meta_desc:
-                    self.meta_desc = (self.meta_desc + " " + content).strip()
-
-    def handle_endtag(self, tag):
-        tag_l = tag.lower()
-        if tag_l in ("script", "style", "noscript", "svg") and self._skip_depth > 0:
-            self._skip_depth -= 1
-        elif tag_l == "title":
-            self._in_title = False
-        elif tag_l in ("h1", "h2", "p", "article"):
-            self._in_p_or_h = False
-
-    def handle_data(self, data):
-        if self._skip_depth > 0:
-            return
-        txt = " ".join(data.split())
-        if not txt:
-            return
-        if self._in_title:
-            self.title = (self.title + " " + txt).strip()
-        elif self._in_p_or_h and len(" ".join(self.chunks)) < 1200:
-            self.chunks.append(txt)
-
-
-def _extrair_texto_de_url(url: str) -> tuple[str, str]:
-    """Lê título e trechos principais de uma URL HTTP/HTTPS com segurança e timeout curto."""
-    parsed = urllib.parse.urlparse(url)
-    dominio = parsed.netloc.lower().replace("www.", "")
-    if parsed.scheme not in ("http", "https") or not dominio:
-        return "", ""
-
-    req = urllib.request.Request(
-        url,
-        headers={"User-Agent": "Mozilla/5.0 (compatible; ProtejaJaFactCheck/1.0)"},
-    )
-    try:
-        with urllib.request.urlopen(req, timeout=6) as resp:
-            ctype = (resp.headers.get("Content-Type") or "").lower()
-            if "html" not in ctype and "text" not in ctype:
-                return "", dominio
-            raw = resp.read(262144)  # máximo 256 KB
-            html_str = raw.decode("utf-8", errors="ignore")
-    except Exception:
-        # Fallback usando slug da URL se o site bloquear/expirar
-        slug_limpo = re.sub(r"[-_/]+", " ", parsed.path or "").strip()
-        return slug_limpo, dominio
-
-    parser = _LinkTextExtractor()
-    try:
-        parser.feed(html_str)
-    except Exception:
-        pass
-
-    partes = [p for p in [parser.title, parser.meta_desc, " ".join(parser.chunks[:6])] if p]
-    texto_final = " — ".join(partes)[:1500].strip()
-    if not texto_final:
-        texto_final = re.sub(r"[-_/]+", " ", parsed.path or "").strip()
-    return texto_final, dominio
 
 
 def login_obrigatorio(visao):
@@ -430,97 +293,15 @@ def create_app():
             limite = 10
         return jsonify({"municipios": municipios.buscar_municipios(termo, limite=limite)})
 
-    @app.route("/fato-ou-fake")
     @app.route("/noticias")
-    def fato_ou_fake():
+    def noticias():
         categoria_noticia = (request.args.get("tema") or "todas").strip().lower()
-        noticias = news_portal.obter_noticias(categoria=categoria_noticia, limite=12)
+        lista_noticias = news_portal.obter_noticias(categoria=categoria_noticia, limite=12)
         return render_template(
-            "fato_ou_fake.html",
-            noticias=noticias,
+            "noticias.html",
+            noticias=lista_noticias,
             categoria_noticia=categoria_noticia,
         )
-
-    @app.route("/api/v1/checar-fato", methods=["POST"])
-    def api_checar_fato():
-        texto = ""
-        link = ""
-        if request.is_json:
-            dados = request.get_json(silent=True) or {}
-            texto = (dados.get("texto") or "").strip()
-            link = (dados.get("link") or "").strip()
-        else:
-            texto = (request.form.get("texto") or "").strip()
-            link = (request.form.get("link") or "").strip()
-
-        arquivo_imagem = request.files.get("imagem")
-        if arquivo_imagem and arquivo_imagem.filename:
-            if not imagem_fato_permitida(arquivo_imagem.filename):
-                return jsonify({
-                    "sucesso": False,
-                    "erro": "Formato de imagem inválido. Envie apenas PNG, JPG, JPEG, WEBP ou GIF.",
-                }), 400
-            nome_seguro = secure_filename(f"fato_{uuid.uuid4().hex[:8]}_{arquivo_imagem.filename}")
-            caminho_temp = os.path.join(UPLOAD_DIR, nome_seguro)
-            try:
-                arquivo_imagem.save(caminho_temp)
-                tamanho_kb = round(os.path.getsize(caminho_temp) / 1024, 1)
-            finally:
-                try:
-                    if os.path.exists(caminho_temp):
-                        os.remove(caminho_temp)
-                except OSError:
-                    pass
-
-            if not texto:
-                return jsonify({
-                    "sucesso": True,
-                    "status": "alerta",
-                    "confianca": 0,
-                    "veredito": "IMAGEM RECEBIDA — INFORME O TEXTO DA IMAGEM",
-                    "badge_class": "status-alerta",
-                    "score_confianca": 0,
-                    "texto_analisado": f"[Imagem: {arquivo_imagem.filename} ({tamanho_kb} KB)]",
-                    "parecer": (
-                        f"A imagem '{arquivo_imagem.filename}' ({tamanho_kb} KB) foi recebida e validada. "
-                        "Para cruzar a alegação com os registros oficiais (STF, Banco Central, Receita Federal, Anvisa e portais de checagem), "
-                        "informe também a manchete ou o texto exibido no print."
-                    ),
-                    "sintese": (
-                        "Imagem validada. Cole o texto ou manchete presente na imagem no campo de legenda para executar a auditoria completa."
-                    ),
-                    "motivos": [
-                        f"Arquivo recebido com segurança ({tamanho_kb} KB).",
-                        "Nenhuma leitura automática de texto (OCR) está configurada no servidor; adicione a legenda ou frase da imagem para checagem documental.",
-                    ],
-                    "orientacao": "Copie a manchete ou frase principal da imagem e cole no campo de legenda ou na aba Texto.",
-                    "fonte_recomendada": {"nome": "Auditoria Visual Proteja-Já", "url": None},
-                    "evidencias_oficiais": [],
-                })
-
-        if link:
-            parsed_link = urllib.parse.urlparse(link)
-            if parsed_link.scheme not in ("http", "https") or not parsed_link.netloc:
-                return jsonify({
-                    "sucesso": False,
-                    "erro": "Informe um link válido começando com http:// ou https://.",
-                }), 400
-            conteudo_link, dominio = _extrair_texto_de_url(link)
-            if conteudo_link:
-                texto = f"{conteudo_link} {texto}".strip()
-            elif not texto:
-                texto = f"Notícia publicada no domínio {dominio} ({link})"
-
-        if not texto:
-            return jsonify({
-                "sucesso": False,
-                "erro": "Nenhum conteúdo informado. Cole um texto, informe um link de notícia ou envie uma imagem com legenda para checar.",
-            }), 400
-
-        resultado = fact_checker.analisar_fato(texto)
-        if link and resultado.get("sucesso"):
-            resultado["link_analisado"] = link
-        return jsonify(resultado)
 
     @app.route("/home/<path:filename>")
     def home_static(filename):
@@ -588,11 +369,12 @@ def create_app():
 
             endereco = (request.form.get("endereco") or "").strip()
             senha = request.form.get("senha") or ""
+            confirmar_senha = request.form.get("confirmar_senha") or ""
             nome_completo = f"{nome} {sobrenome}".strip()
 
             maioridade_ok, erro_idade = validar_maioridade(data_nascimento)
 
-            if not all([nome, sobrenome, email, data_nascimento, cidade, senha]):
+            if not all([nome, sobrenome, email, data_nascimento, cidade, senha, confirmar_senha]):
                 flash("Preencha todos os campos do cadastro.", "error")
             elif not validar_email(email):
                 flash("Informe um e-mail válido.", "error")
@@ -600,8 +382,10 @@ def create_app():
                 flash(erro_idade, "error")
             elif not cidade_canonica:
                 flash("Selecione um município brasileiro válido na lista (ex.: Araraquara - SP).", "error")
-            elif len(senha) < 6:
-                flash("A senha deve ter no mínimo 6 caracteres.", "error")
+            elif len(senha) < 8 or not re.search(r"[A-Z]", senha) or not re.search(r"[a-z]", senha):
+                flash("A senha deve ter no mínimo 8 caracteres, com pelo menos 1 letra maiúscula e 1 letra minúscula.", "error")
+            elif senha != confirmar_senha:
+                flash("As senhas não conferem. Digite a mesma senha nos dois campos.", "error")
             elif contem_ofensa(nome) or contem_ofensa(sobrenome):
                 flash("Nome ou sobrenome contêm palavras ofensivas e não podem ser usados.", "error")
             elif contem_ofensa(cidade_canonica) or (endereco and contem_ofensa(endereco)):
@@ -646,63 +430,6 @@ def create_app():
         session.clear()
         flash("Sessão finalizada com segurança.", "success")
         return redirect(url_for("home"))
-
-    @app.route("/recuperar", methods=["GET", "POST"])
-    def recuperar():
-        etapa = request.args.get("etapa", "solicitar")
-        email_pendente = (request.args.get("email") or "").strip().lower()
-
-        if request.method == "POST":
-            acao = (request.form.get("acao") or "solicitar").strip()
-            email = (request.form.get("email") or "").strip().lower()
-            email_pendente = email
-
-            if acao == "redefinir":
-                etapa = "redefinir"
-                codigo = (request.form.get("codigo") or "").strip()
-                nova_senha = request.form.get("nova_senha") or ""
-
-                if not email or not codigo or not nova_senha:
-                    flash("Preencha o e-mail, o código de 6 dígitos e a nova senha.", "error")
-                elif len(nova_senha) < 6:
-                    flash("A nova senha deve ter no mínimo 6 caracteres.", "error")
-                else:
-                    usuario = db.usuario_por_email(email)
-                    reset = db.obter_codigo_recuperacao_ativo(usuario["id"]) if usuario else None
-                    agora = int(time.time())
-                    if (
-                        not reset
-                        or agora > reset["expira_em"]
-                        or not check_password_hash(reset["codigo_hash"], codigo)
-                    ):
-                        flash("Código inválido ou expirado. Solicite um novo código.", "error")
-                    else:
-                        db.marcar_codigo_recuperacao_usado(reset["id"])
-                        db.atualizar_senha(usuario["id"], generate_password_hash(nova_senha))
-                        flash("Senha redefinida com sucesso! Faça login com sua nova senha.", "success")
-                        return redirect(url_for("login"))
-            else:
-                if not email or not validar_email(email):
-                    flash("Informe um e-mail válido.", "error")
-                else:
-                    usuario = db.usuario_por_email(email)
-                    if usuario:
-                        codigo = f"{secrets.randbelow(900000) + 100000}"
-                        expira_em = int(time.time()) + 600  # 10 minutos
-                        db.criar_codigo_recuperacao(
-                            usuario["id"],
-                            generate_password_hash(codigo),
-                            expira_em,
-                        )
-                        _enviar_codigo_recuperacao_email(email, usuario["nome"], codigo)
-
-                    flash(
-                        "Se o e-mail estiver cadastrado, enviamos um código de verificação de 6 dígitos válido por 10 minutos.",
-                        "info",
-                    )
-                    etapa = "redefinir"
-
-        return render_template("recuperar.html", etapa=etapa, email_pendente=email_pendente)
 
     # ==========================================================
     # DENÚNCIAS & TERMO DE RESPONSABILIDADE LEGAL

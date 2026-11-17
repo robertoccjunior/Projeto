@@ -14,13 +14,13 @@
         <form method="POST" action="/login" class="space-y-4">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div>
-                <label for="email" class="campo-label">E-mail</label>
+                <label for="email" class="campo-label">E-mail <span style="color:#ef4444" aria-hidden="true">*</span></label>
                 <input type="email" id="email" name="email" required autocomplete="email"
                        class="campo" placeholder="seu.email@exemplo.com (obrigatório)" value="{{ request.form.get('email', '') }}">
             </div>
 
             <div>
-                <label for="senha" class="campo-label">Senha</label>
+                <label for="senha" class="campo-label">Senha <span style="color:#ef4444" aria-hidden="true">*</span></label>
                 <input type="password" id="senha" name="senha" required autocomplete="current-password"
                        class="campo" placeholder="Digite sua senha (obrigatório)">
             </div>
@@ -30,11 +30,7 @@
             </button>
         </form>
 
-        <div class="mt-6 pt-4 border-t border-slate-800 text-center text-xs space-y-2">
-            <p class="text-slate-400">
-                Esqueceu sua senha?
-                <a href="/recuperar" class="text-rose-400 hover:text-rose-300 font-semibold underline">Recuperar acesso</a>
-            </p>
+        <div class="mt-6 pt-4 border-t border-slate-800 text-center text-xs">
             <p class="text-slate-400">
                 Ainda não tem cadastro?
                 <a href="/cadastro" class="text-rose-400 hover:text-rose-300 font-semibold">Cadastre-se gratuitamente</a>

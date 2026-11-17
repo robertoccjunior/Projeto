@@ -1,6 +1,6 @@
-# 🛡️ ProtejaJÁ — Plataforma Cidadã de Denúncias e Checagem de Fatos
+# 🛡️ ProtejaJÁ — Plataforma Cidadã de Denúncias Seguras
 
-**Projeto Integrador** de utilidade pública com **abrangência nacional (todos os 5.570 municípios do Brasil)** para registro seguro de ocorrências contra estabelecimentos, produtos e serviços, aliado a um canal de verificação de boatos em tempo real (**Fato ou Fake**).
+**Projeto Integrador** de utilidade pública com **abrangência nacional (todos os 5.570 municípios do Brasil)** para registro seguro de ocorrências contra estabelecimentos, produtos e serviços, aliado a um **Portal de Notícias e Alertas**.
 
 ---
 
@@ -8,7 +8,7 @@
 
 - **Registro de Denúncias com Provas e Autocomplete Nacional:** Envio de relatos categorizados (`#Produto`, `#Serviço`, `#PreçoAbusivo`, `#Higiene`, etc.) com autocomplete otimizado de todos os municípios brasileiros (base IBGE, formato `Cidade - UF`), bairro, anexo de evidências (imagens, PDF ou vídeo até 5 MB) e mecanismo obrigatório *Scroll-to-Agree* do Termo de Responsabilidade Legal (Art. 299/340 do Código Penal).
 - **Moderação e Feed Público Auditado:** Painel administrativo para aprovação ou rejeição de ocorrências e integração via API REST para triagem automatizada com score de confiança. Apenas relatos aprovados vão para o feed comunitário público (`/denuncias-publicas`), com filtro por município nacional e palavras-chave.
-- **Fato ou Fake (Checagem em Tempo Real):** Verificação instantânea de boatos por **texto, link de notícia ou imagem**, consultando base de conhecimento indexada (SQLite FTS5) e fontes oficiais (Banco Central, Receita Federal, Anvisa, Procon, Ministério da Saúde e portais de checagem).
+- **Portal de Notícias e Alertas (`/noticias`):** Acompanhamento de notícias e alertas oficiais sobre golpes, impostos, dinheiro público e direitos do consumidor.
 - **Privacidade, Maioridade e Conformidade LGPD:**
   - *Minimização de dados e 18+:* Cadastro exige apenas nome, sobrenome, e-mail, data de nascimento (com validação estrita de maioridade >= 18 anos) e município, com indicação explícita de campos obrigatórios (`* (obrigatório)`).
   - *Direito ao Esquecimento:* Exclusão definitiva de conta (`/excluir-conta`) mediante senha, expurgando usuário, denúncias no banco e arquivos físicos de prova em `backend/uploads/`.
@@ -22,10 +22,10 @@
 | Camada | Tecnologia | Descrição |
 |---|---|---|
 | **Back-end** | Python 3.12+ / Flask 3.x | Rotas web, autenticação, moderação, segurança e APIs REST |
-| **Banco de Dados** | SQLite 3 (Relacional + FTS5) | Persistência transacional (`db/app.db`) e base textual indexada (`db/rag_knowledge.db`) |
+| **Banco de Dados** | SQLite 3 (Relacional) | Persistência transacional (`db/app.db`) |
 | **Front-end** | HTML5 Semântico + CSS3 / JS Vanilla | Templates Jinja2 acessíveis, CSS minificado (`styles.min.css`) e JS deferido (`home.min.js`) |
 | **Infraestrutura** | Docker & Docker Compose | Empacotamento reproduzível com volumes persistentes |
-| **Qualidade** | `unittest` (`test_suite.py`) | 19 testes automatizados cobrindo RF, RNF, segurança, LGPD e checagem de fatos |
+| **Qualidade** | `unittest` (`test_suite.py`) | Suíte de testes automatizados cobrindo RF, RNF, segurança e LGPD |
 
 ---
 
@@ -34,19 +34,16 @@
 ```text
 protejaja/
 ├── backend/
-│   ├── templates/           # Telas HTML5 (home, login, cadastro, denuncias, admin, fato_ou_fake...)
+│   ├── templates/           # Telas HTML5 (home, login, cadastro, denuncias, admin, noticias...)
 │   ├── uploads/             # Armazenamento físico seguro de anexos de provas
 │   ├── app.py               # Aplicação Flask, rotas, middlewares HTTP e endpoints REST
 │   ├── database.py          # Camada de persistência SQLite, migrações e queries parametrizadas
-│   ├── fact_checker.py      # Orquestrador do módulo Fato ou Fake (texto, link e imagem)
 │   ├── municipios.py        # Índice em memória e busca normalizada dos 5.570 municípios IBGE
 │   ├── data/municipios.json # Base oficial IBGE de municípios brasileiros (Cidade - UF)
-│   ├── agentic_checker.py   # Pipeline de verificação web em fontes de autoridade
-│   ├── rag_engine.py        # Motor de busca textual em SQLite FTS5 com fatos oficiais
+│   ├── news_portal.py       # Agregador de notícias e alertas por categoria
 │   └── profanity.py         # Filtro antiofensa e sanitização de texto
 ├── db/
-│   ├── app.db               # Banco de dados relacional (usuários e denúncias)
-│   └── rag_knowledge.db     # Base de conhecimento oficial indexada via FTS5
+│   └── app.db               # Banco de dados relacional (usuários e denúncias)
 ├── home/
 │   ├── css/                 # Estilos CSS (styles.css e styles.min.css)
 │   ├── js/                  # Scripts client-side (home.src.js, home.js e home.min.js)
@@ -82,7 +79,7 @@ protejaja/
 
 3. **Acesse no navegador:**
    - Aplicação: `http://127.0.0.1:5000/home`
-   - Fato ou Fake: `http://127.0.0.1:5000/fato-ou-fake`
+   - Portal de Notícias: `http://127.0.0.1:5000/noticias`
    - Feed Público: `http://127.0.0.1:5000/denuncias-publicas`
    - Painel Admin: `http://127.0.0.1:5000/admin`
 
@@ -109,7 +106,7 @@ O banco de dados inicializa automaticamente a conta de moderação:
 
 ## Executando os Testes
 
-Para rodar os testes (Requisitos Funcionais, Não Funcionais, LGPD, Acessibilidade e Fato ou Fake):
+Para rodar os testes (Requisitos Funcionais, Não Funcionais, LGPD e Acessibilidade):
 
 ```bash
 python test_suite.py

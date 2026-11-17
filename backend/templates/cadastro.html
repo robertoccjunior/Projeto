@@ -19,12 +19,12 @@
             <!-- NOME E SOBRENOME -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                    <label for="nome" class="campo-label">Primeiro Nome</label>
+                    <label for="nome" class="campo-label">Primeiro Nome <span style="color:#ef4444" aria-hidden="true">*</span></label>
                     <input type="text" id="nome" name="nome" required
                            class="campo" placeholder="Ex.: Maria (obrigatório)" value="{{ request.form.get('nome', '') }}">
                 </div>
                 <div>
-                    <label for="sobrenome" class="campo-label">Sobrenome</label>
+                    <label for="sobrenome" class="campo-label">Sobrenome <span style="color:#ef4444" aria-hidden="true">*</span></label>
                     <input type="text" id="sobrenome" name="sobrenome" required
                            class="campo" placeholder="Ex.: Silva (obrigatório)" value="{{ request.form.get('sobrenome', '') }}">
                 </div>
@@ -33,12 +33,12 @@
             <!-- EMAIL E DATA DE NASCIMENTO -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                    <label for="email" class="campo-label">E-mail</label>
+                    <label for="email" class="campo-label">E-mail <span style="color:#ef4444" aria-hidden="true">*</span></label>
                     <input type="email" id="email" name="email" required autocomplete="email"
                            class="campo" placeholder="maria.silva@exemplo.com (obrigatório)" value="{{ request.form.get('email', '') }}">
                 </div>
                 <div>
-                    <label for="data_nascimento" class="campo-label">Data de Nascimento (obrigatório)</label>
+                    <label for="data_nascimento" class="campo-label">Data de Nascimento <span style="color:#ef4444" aria-hidden="true">*</span></label>
                     <input type="date" id="data_nascimento" name="data_nascimento" required
                            max="{{ max_data_nascimento }}"
                            class="campo" value="{{ request.form.get('data_nascimento', '') }}">
@@ -48,7 +48,7 @@
 
             <!-- MUNICÍPIO NACIONAL (AUTOCOMPLETE IBGE) -->
             <div>
-                <label for="cidade" class="campo-label">Município / Cidade</label>
+                <label for="cidade" class="campo-label">Município / Cidade <span style="color:#ef4444" aria-hidden="true">*</span></label>
                 <div class="autocomplete-wrap">
                     <input type="text" id="cidade" name="cidade" required autocomplete="off"
                            role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="listaMunicipiosCadastro"
@@ -60,12 +60,24 @@
                 <p class="text-[11px] text-slate-400 mt-1">Busque entre todos os 5.570 municípios brasileiros e selecione na lista.</p>
             </div>
 
-            <!-- SENHA -->
-            <div>
-                <label for="senha" class="campo-label">Senha (mínimo 6 caracteres)</label>
-                <input type="password" id="senha" name="senha" required minlength="6" autocomplete="new-password"
-                       class="campo" placeholder="Crie sua senha (obrigatório)">
+            <!-- SENHA E CONFIRMAÇÃO DE SENHA -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div>
+                    <label for="senha" class="campo-label">Senha <span style="color:#ef4444" aria-hidden="true">*</span></label>
+                    <input type="password" id="senha" name="senha" required minlength="8"
+                           pattern="(?=.*[a-z])(?=.*[A-Z]).{8,}"
+                           title="Mínimo 8 caracteres, contendo pelo menos 1 letra maiúscula e 1 letra minúscula."
+                           autocomplete="new-password"
+                           class="campo" placeholder="Mín. 8 chars, maiúscula e minúscula">
+                </div>
+                <div>
+                    <label for="confirmar_senha" class="campo-label">Confirmar Senha <span style="color:#ef4444" aria-hidden="true">*</span></label>
+                    <input type="password" id="confirmar_senha" name="confirmar_senha" required minlength="8"
+                           autocomplete="new-password"
+                           class="campo" placeholder="Repita a senha digitada">
+                </div>
             </div>
+            <p class="text-[11px] text-slate-400 -mt-2">A senha deve ter no mínimo 8 caracteres, incluindo pelo menos 1 letra maiúscula e 1 letra minúscula.</p>
 
             <button type="submit" class="btn-cyber-primary btn-grande w-full mt-2 font-bold">
                 Criar Conta
@@ -91,7 +103,25 @@ document.addEventListener("DOMContentLoaded", function () {
         window.ProtejaMunicipios.init("cidade", "listaMunicipiosCadastro", { requireSelection: true });
     }
     var nascInput = document.getElementById("data_nascimento");
+    var senhaInput = document.getElementById("senha");
+    var confirmarInput = document.getElementById("confirmar_senha");
     var form = document.getElementById("formCadastro");
+
+    function validarSenhasIguais() {
+        if (!senhaInput || !confirmarInput) return true;
+        if (confirmarInput.value && senhaInput.value !== confirmarInput.value) {
+            confirmarInput.setCustomValidity("As senhas não conferem.");
+            return false;
+        }
+        confirmarInput.setCustomValidity("");
+        return true;
+    }
+
+    if (senhaInput && confirmarInput) {
+        senhaInput.addEventListener("input", validarSenhasIguais);
+        confirmarInput.addEventListener("input", validarSenhasIguais);
+    }
+
     if (nascInput && form) {
         nascInput.addEventListener("input", function () {
             nascInput.setCustomValidity("");
@@ -103,6 +133,11 @@ document.addEventListener("DOMContentLoaded", function () {
                 e.preventDefault();
                 nascInput.setCustomValidity("Cadastro permitido apenas para maiores de 18 anos.");
                 nascInput.reportValidity();
+                return;
+            }
+            if (!validarSenhasIguais()) {
+                e.preventDefault();
+                confirmarInput.reportValidity();
             }
         });
     }

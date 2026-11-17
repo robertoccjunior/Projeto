@@ -17,7 +17,7 @@
         <form method="POST" action="/denuncias" enctype="multipart/form-data" class="space-y-5" id="formDenuncia">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <div>
-                <label for="denunciado" class="campo-label">Quem você está denunciando?</label>
+                <label for="denunciado" class="campo-label">Quem você está denunciando? <span style="color:#ef4444" aria-hidden="true">*</span></label>
                 <input type="text" id="denunciado" name="denunciado" required
                        class="campo" placeholder="Ex.: Supermercado, Posto, Loja, Hospital... (obrigatório)"
                        value="{{ request.form.get('denunciado', '') }}">
@@ -26,7 +26,7 @@
             <!-- CIDADE (AUTOCOMPLETE NACIONAL IBGE) E BAIRRO -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                    <label for="cidadeDenuncia" class="campo-label">Município / Cidade do Fato</label>
+                    <label for="cidadeDenuncia" class="campo-label">Município / Cidade do Fato <span style="color:#ef4444" aria-hidden="true">*</span></label>
                     <div class="autocomplete-wrap">
                         <input type="text" id="cidadeDenuncia" name="cidade" required autocomplete="off"
                                role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="listaMunicipiosDenuncia"
@@ -39,7 +39,7 @@
                 </div>
 
                 <div>
-                    <label for="bairroDenuncia" class="campo-label">Bairro / Unidade / Filial</label>
+                    <label for="bairroDenuncia" class="campo-label">Bairro / Unidade / Filial <span style="color:#ef4444" aria-hidden="true">*</span></label>
                     <input type="text" id="bairroDenuncia" name="bairro" required
                            class="campo" placeholder="Ex.: Vila Xavier, Centro... (obrigatório)"
                            value="{{ request.form.get('bairro', '') }}">
@@ -49,7 +49,7 @@
 
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div class="sm:col-span-2">
-                    <label for="assunto" class="campo-label">Assunto da Ocorrência</label>
+                    <label for="assunto" class="campo-label">Assunto da Ocorrência <span style="color:#ef4444" aria-hidden="true">*</span></label>
                     <input type="text" id="assunto" name="assunto" required
                            class="campo" placeholder="Ex.: Produto vencido, cobrança indevida... (obrigatório)"
                            value="{{ request.form.get('assunto', '') }}">
@@ -68,7 +68,7 @@
             </div>
 
             <div>
-                <label for="descricao" class="campo-label">Detalhamento dos Fatos</label>
+                <label for="descricao" class="campo-label">Detalhamento dos Fatos <span style="color:#ef4444" aria-hidden="true">*</span></label>
                 <textarea id="descricao" name="descricao" rows="5" required
                           class="campo" placeholder="Descreva o que ocorreu, data, horário e local... (obrigatório)">{{ request.form.get('descricao', '') }}</textarea>
                 <p class="text-[11px] text-slate-400 mt-1">
