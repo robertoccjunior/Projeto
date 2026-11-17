@@ -11,18 +11,21 @@
             <p class="text-xs text-slate-400 mt-1">Insira seu e-mail e senha para gerenciar suas denúncias.</p>
         </div>
 
-        <form method="POST" action="/login" class="space-y-4">
+        <form method="POST" action="/login" class="space-y-4" aria-describedby="legendaObrigatoriosLogin">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <p id="legendaObrigatoriosLogin" class="text-xs text-slate-300">
+                Campos marcados com <span class="text-red-400 font-bold" aria-hidden="true">*</span> são obrigatórios.
+            </p>
             <div>
-                <label for="email" class="campo-label">E-mail <span style="color:#ef4444" aria-hidden="true">*</span></label>
-                <input type="email" id="email" name="email" required autocomplete="email"
-                       class="campo" placeholder="seu.email@exemplo.com (obrigatório)" value="{{ request.form.get('email', '') }}">
+                <label for="email" class="campo-label">E-mail <span class="text-red-400 font-bold" aria-hidden="true">*</span></label>
+                <input type="email" id="email" name="email" required aria-required="true" autocomplete="email"
+                       class="campo" placeholder="seu.email@exemplo.com" value="{{ request.form.get('email', '') }}">
             </div>
 
             <div>
-                <label for="senha" class="campo-label">Senha <span style="color:#ef4444" aria-hidden="true">*</span></label>
-                <input type="password" id="senha" name="senha" required autocomplete="current-password"
-                       class="campo" placeholder="Digite sua senha (obrigatório)">
+                <label for="senha" class="campo-label">Senha <span class="text-red-400 font-bold" aria-hidden="true">*</span></label>
+                <input type="password" id="senha" name="senha" required aria-required="true" autocomplete="current-password"
+                       class="campo" placeholder="Digite sua senha">
             </div>
 
             <button type="submit" class="btn-cyber-primary btn-grande w-full mt-2 font-bold">

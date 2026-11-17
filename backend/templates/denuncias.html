@@ -14,24 +14,27 @@
 
     <!-- FORMULÁRIO DE ENVIO DE DENÚNCIA -->
     <div class="card-cyber mb-10">
-        <form method="POST" action="/denuncias" enctype="multipart/form-data" class="space-y-5" id="formDenuncia">
+        <form method="POST" action="/denuncias" enctype="multipart/form-data" class="space-y-5" id="formDenuncia" aria-describedby="legendaObrigatoriosDenuncia">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <p id="legendaObrigatoriosDenuncia" class="text-xs text-slate-300">
+                Campos marcados com <span class="text-red-400 font-bold" aria-hidden="true">*</span> são obrigatórios.
+            </p>
             <div>
-                <label for="denunciado" class="campo-label">Quem você está denunciando? <span style="color:#ef4444" aria-hidden="true">*</span></label>
-                <input type="text" id="denunciado" name="denunciado" required
-                       class="campo" placeholder="Ex.: Supermercado, Posto, Loja, Hospital... (obrigatório)"
+                <label for="denunciado" class="campo-label">Quem você está denunciando? <span class="text-red-400 font-bold" aria-hidden="true">*</span></label>
+                <input type="text" id="denunciado" name="denunciado" required aria-required="true"
+                       class="campo" placeholder="Ex.: Supermercado, Posto, Loja, Hospital..."
                        value="{{ request.form.get('denunciado', '') }}">
             </div>
 
             <!-- CIDADE (AUTOCOMPLETE NACIONAL IBGE) E BAIRRO -->
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
-                    <label for="cidadeDenuncia" class="campo-label">Município / Cidade do Fato <span style="color:#ef4444" aria-hidden="true">*</span></label>
+                    <label for="cidadeDenuncia" class="campo-label">Município / Cidade do Fato <span class="text-red-400 font-bold" aria-hidden="true">*</span></label>
                     <div class="autocomplete-wrap">
-                        <input type="text" id="cidadeDenuncia" name="cidade" required autocomplete="off"
+                        <input type="text" id="cidadeDenuncia" name="cidade" required aria-required="true" autocomplete="off"
                                role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="listaMunicipiosDenuncia"
                                class="campo"
-                               placeholder="Digite o município, ex.: Araraquara - SP (obrigatório)"
+                               placeholder="Digite o município, ex.: Araraquara - SP"
                                value="{{ request.form.get('cidade', '') }}">
                         <div id="listaMunicipiosDenuncia" role="listbox" class="hidden autocomplete-dropdown"></div>
                     </div>
@@ -39,9 +42,9 @@
                 </div>
 
                 <div>
-                    <label for="bairroDenuncia" class="campo-label">Bairro / Unidade / Filial <span style="color:#ef4444" aria-hidden="true">*</span></label>
-                    <input type="text" id="bairroDenuncia" name="bairro" required
-                           class="campo" placeholder="Ex.: Vila Xavier, Centro... (obrigatório)"
+                    <label for="bairroDenuncia" class="campo-label">Bairro / Unidade / Filial <span class="text-red-400 font-bold" aria-hidden="true">*</span></label>
+                    <input type="text" id="bairroDenuncia" name="bairro" required aria-required="true"
+                           class="campo" placeholder="Ex.: Vila Xavier, Centro..."
                            value="{{ request.form.get('bairro', '') }}">
                     <p class="text-[11px] text-slate-400 mt-1">Especifique o bairro para diferenciar unidades da mesma empresa.</p>
                 </div>
@@ -49,9 +52,9 @@
 
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 <div class="sm:col-span-2">
-                    <label for="assunto" class="campo-label">Assunto da Ocorrência <span style="color:#ef4444" aria-hidden="true">*</span></label>
-                    <input type="text" id="assunto" name="assunto" required
-                           class="campo" placeholder="Ex.: Produto vencido, cobrança indevida... (obrigatório)"
+                    <label for="assunto" class="campo-label">Assunto da Ocorrência <span class="text-red-400 font-bold" aria-hidden="true">*</span></label>
+                    <input type="text" id="assunto" name="assunto" required aria-required="true"
+                           class="campo" placeholder="Ex.: Produto vencido, cobrança indevida..."
                            value="{{ request.form.get('assunto', '') }}">
                 </div>
 
@@ -68,9 +71,9 @@
             </div>
 
             <div>
-                <label for="descricao" class="campo-label">Detalhamento dos Fatos <span style="color:#ef4444" aria-hidden="true">*</span></label>
-                <textarea id="descricao" name="descricao" rows="5" required
-                          class="campo" placeholder="Descreva o que ocorreu, data, horário e local... (obrigatório)">{{ request.form.get('descricao', '') }}</textarea>
+                <label for="descricao" class="campo-label">Detalhamento dos Fatos <span class="text-red-400 font-bold" aria-hidden="true">*</span></label>
+                <textarea id="descricao" name="descricao" rows="5" required aria-required="true"
+                          class="campo" placeholder="Descreva o que ocorreu, data, horário e local...">{{ request.form.get('descricao', '') }}</textarea>
                 <p class="text-[11px] text-slate-400 mt-1">
                     Descreva datas, horários e detalhes com clareza para facilitar a verificação.
                 </p>
