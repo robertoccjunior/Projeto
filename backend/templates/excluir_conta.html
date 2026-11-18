@@ -13,15 +13,12 @@
             </p>
         </div>
 
-        <form method="POST" action="/excluir-conta" class="space-y-4" aria-describedby="legendaObrigatoriosExcluir">
+        <form method="POST" action="/excluir-conta" class="space-y-4">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <p id="legendaObrigatoriosExcluir" class="text-xs text-slate-300">
-                Campos marcados com <span class="text-red-400 font-bold" aria-hidden="true">*</span> são obrigatórios.
-            </p>
             <div>
-                <label for="senha" class="campo-label text-red-300">Confirme sua senha para continuar <span class="text-red-400 font-bold" aria-hidden="true">*</span></label>
-                <input type="password" id="senha" name="senha" required aria-required="true" autocomplete="current-password"
-                       class="campo border-red-500/40 focus:border-red-500" placeholder="Digite sua senha atual">
+                <label for="senha" class="campo-label text-red-300">Confirme sua senha para continuar <span style="color:#ef4444" aria-hidden="true">*</span></label>
+                <input type="password" id="senha" name="senha" required autocomplete="current-password"
+                       class="campo border-red-500/40 focus:border-red-500" placeholder="Digite sua senha atual (obrigatório)">
             </div>
 
             <button type="submit" class="btn-cyber-danger">

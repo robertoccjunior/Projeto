@@ -1,15 +1,15 @@
 # ProtejaJA — Documentação Técnica
 
-Projeto integrador de plataforma cidadã de denúncias seguras e utilidade pública. Este documento descreve a visão geral do sistema, a arquitetura utilizada, as funcionalidades implementadas, as medidas de segurança e conformidade (LGPD), a documentação do banco de dados e a infraestrutura de execução.
+Projeto integrador de plataforma cidadã de denúncias seguras e utilidade pública. Este documento descreve a visão geral do sistema, a arquitetura utilizada, as funcionalidades implementadas, as medidas de segurança, a documentação do banco de dados e a infraestrutura de execução.
 
 ---
 
 ## Resumo Executivo da Sprint
 
-Na sprint atual, o ProtejaJA consolidou sua maturidade técnica com foco em conformidade, segurança e performance máxima:
+Na sprint atual, o ProtejaJA consolidou sua maturidade técnica com foco em segurança e performance máxima:
 
-1. **Privacidade e Minimização de Dados (LGPD):** O cadastro foi simplificado, exigindo **nome e sobrenome separados**, e o campo de **endereço residencial foi removido** do formulário de registro, reduzindo a coleta de dados ao estritamente necessário. A exclusão de conta expurga definitivamente cadastro, denúncias e arquivos de prova do disco.
-2. **Moderação & Inteligência de Triagem:** O painel do administrador permite aprovar ou rejeitar cada denúncia; apenas as aprovadas são indexadas no feed público com tags. Adicionalmente, foi implementada uma API REST para robôs de triagem de IA com score de confiança.
+1. **Privacidade e Minimização de Dados:** O cadastro exige **nome e sobrenome separados**, e-mail, data de nascimento (18+ anos) e município, reduzindo a coleta de dados ao estritamente necessário. A exclusão de conta expurga definitivamente cadastro, denúncias e arquivos de prova do disco.
+2. **Moderação & Feed Público:** O painel do administrador permite aprovar ou rejeitar cada denúncia; apenas as aprovadas são exibidas no feed público.
 3. **Portal de Notícias e Alertas (`/noticias`):** Central informativa com notícias e alertas sobre golpes, impostos, dinheiro público e direitos do consumidor.
 4. **Performance e Acessibilidade Máximas (Lighthouse 98-100):** Eliminação de dependência de CDN de Tailwind, migrando para CSS crítico minificado e inlined diretamente no `<head>`, com JavaScript deferido e tema Dark Neon com conformidade WCAG AAA (nota 100 em Acessibilidade e SEO).
 
@@ -22,7 +22,7 @@ Na sprint atual, o ProtejaJA consolidou sua maturidade técnica com foco em conf
 - **Autor da denúncia:** usuário cidadão autenticado.
 - **Autor do fato denunciado:** estabelecimento comercial, empresa ou prestador de serviços.
 - **Prova:** anexo opcional de imagem, PDF ou vídeo (máximo 5 MB).
-- **Termo Legal:** mecanismo obrigatório *Scroll-to-Agree* para coibir comunicações falsas de crime (Art. 339 do Código Penal).
+- **Termo Legal:** aceite obrigatório para coibir comunicações falsas de crime (Art. 339 do Código Penal).
 - **Direito ao Esquecimento:** o usuário pode excluir a conta e todos os seus dados a qualquer momento mediante confirmação por senha.
 
 ### Stack Tecnológica
@@ -31,7 +31,7 @@ Na sprint atual, o ProtejaJA consolidou sua maturidade técnica com foco em conf
 |---|---|---|---|
 | Front-end | HTML5 Semântico + CSS3 / Tailwind Local | Inlined no `<head>` (`styles.min.css`) | Interface de alta fidelidade visual, zero bloqueio de rede (0ms RTT) |
 | Client Scripts | JavaScript Vanilla Minificado | `home.min.js` com `defer` | Visualização de provas, menu responsivo, controle de áudio e scroll |
-| Back-end | Python + Flask | Python 3.12+ / Flask 3.x | Regras de negócio, segurança, rotas e APIs REST |
+| Back-end | Python + Flask | Python 3.12+ / Flask 3.x | Regras de negócio, segurança e rotas web |
 | Banco de dados | SQLite 3 | Nativo com WAL & Foreign Keys | Persistência relacional (`app.db`) |
 | Contêiner | Docker | Docker + Docker Compose | Portabilidade e isolamento em contêineres |
 
@@ -44,7 +44,7 @@ O sistema segue o modelo cliente-servidor com separação nítida de responsabil
 | Camada | Responsabilidade | Arquivos Principais |
 |---|---|---|
 | **Apresentação** | Telas HTML5 responsivas, metadados de SEO/GEO e estilos | `backend/templates/*.html`, `home/css/styles.min.css` |
-| **Negócio & APIs** | Processamento de requisições, segurança, filtro antiofensa e moderação | `backend/app.py`, `backend/profanity.py` |
+| **Negócio** | Processamento de requisições, segurança, filtro antiofensa e moderação | `backend/app.py`, `backend/profanity.py` |
 | **Persistência** | Operações relacionais e migrações de schema | `backend/database.py` |
 | **Armazenamento** | Banco de dados transacional e provas físicas em disco | `db/app.db`, `backend/uploads/` |
 
@@ -52,7 +52,7 @@ O sistema segue o modelo cliente-servidor com separação nítida de responsabil
 
 ```
 Usuário autenticado preenche denúncia e anexa prova
-        ↓ Lê e aceita o Termo Legal (Scroll-to-Agree)
+        ↓ Lê e aceita o Termo Legal
 Flask valida campos, extensões de anexo e filtro antiofensa
         ↓ Grava registro com status 'EM_ANALISE_IA'
 SQLite armazena os metadados; anexo com UUID salvo em uploads/
@@ -66,12 +66,11 @@ Denúncia passa a 'APROVADO' e é disponibilizada no Feed Público
 
 ### 3.1 Home (Página Inicial)
 - Interface com tema Dark Neon / Cyberpunk (`#070a12`, texto slate/white e realces neon `#ff007f`).
-- Destaques comunitários, estatísticas de utilidade pública e feed das últimas 3 ocorrências auditadas com tags de busca.
+- Destaques comunitários, estatísticas de utilidade pública e feed das últimas ocorrências auditadas.
 - Ações diretas de acesso, cadastro e consulta de ocorrências.
 
 ### 3.2 Cadastro Cidadão
 - Campos obrigatórios (marcados com `*` vermelho): **Primeiro Nome**, **Sobrenome** (validação separada), **E-mail**, **Data de Nascimento** (18+ anos), **Cidade**, **Senha** (mínimo 8 caracteres, com 1 maiúscula e 1 minúscula) e **Confirmar Senha**.
-- **Minimização de Dados (LGPD):** O campo de endereço residencial (rua, número, logradouro, CEP) foi **removido** do formulário de cadastro, exigindo apenas a cidade de residência do cidadão.
 - Criptografia irreversível da senha (`scrypt`) antes da gravação no banco.
 - Filtro antiofensa imediato em nomes e cidades.
 
@@ -82,26 +81,26 @@ Denúncia passa a 'APROVADO' e é disponibilizada no Feed Público
 - Campos do formulário:
   - **Quem está denunciando:** Nome do estabelecimento, empresa ou pessoa denunciada.
   - **Sobre o quê:** Assunto resumido da ocorrência.
-  - **Categoria:** Classificação temática (#Produto, #Serviço, #PreçoAbusivo, #Higiene, etc.).
+  - **Categoria:** Classificação temática (Produto, Serviço, Preço Abusivo, Higiene, etc.).
   - **Cidade e Bairro:** Localização exata do fato na região.
   - **Descrição:** Relato pormenorizado do ocorrido com filtro antiofensa automático.
   - **Prova (anexo opcional):** Imagens (JPG, PNG, GIF), PDF ou vídeos (MP4, WEBM) até 5 MB.
-- **Mecanismo Scroll-to-Agree:** O botão de envio só é habilitado após a rolagem completa do Termo de Responsabilidade Legal.
+- **Termo Legal:** O envio exige leitura e aceite do Termo de Responsabilidade Legal.
 
-### 3.6 Exclusão Definitiva de Conta (Direito ao Esquecimento LGPD)
+### 3.6 Exclusão Definitiva de Conta (Direito ao Esquecimento)
 - Acesso pelo menu suspenso ou rota `/excluir-conta`.
 - Exige confirmação de senha do titular.
 - Remove definitivamente o registro do usuário, todas as suas denúncias no banco e apaga fisicamente os arquivos de prova do disco do servidor.
 
 ### 3.7 Painel do Administrador (Moderação)
 - Conta administrativa padrão: `admin@protejaja.com`.
-- Exibição de ocorrências pendentes, dados de triagem automatizada, score de confiança e justificativa.
+- Exibição de ocorrências pendentes.
 - Ações de **Aprovar** (publica no feed comunitário) ou **Rejeitar** a denúncia.
 
 ### 3.8 Feed Público de Ocorrências Auditadas
 - Acesso aberto via `/denuncias-publicas` sem exigir autenticação.
 - Exibe exclusivamente relatos previamente **aprovados** pelo administrador.
-- Busca por texto, autocomplete nacional de municípios (`/api/municipios`) e filtragem por tags temáticas com dados estruturados Schema.org (`NewsArticle`).
+- Busca por texto, autocomplete nacional de municípios (`/api/municipios`) e filtragem por categoria com dados estruturados Schema.org (`NewsArticle`).
 
 ### 3.8 Portal de Notícias e Alertas
 - Página `/noticias` com notícias e alertas filtrados por tema (golpes, impostos, consumidor).
@@ -115,12 +114,6 @@ Denúncia passa a 'APROVADO' e é disponibilizada no Feed Público
   - Defesa Civil: **199**
   - Atendimento à Mulher: **180**
   - Disque Denúncia: **181**
-
-### 3.11 API REST para Robôs de Triagem Inteligente
-- Endpoints para automação e integração externa:
-  - `GET /api/v1/denuncias/pendentes` — Lista denúncias em análise.
-  - `PATCH /api/v1/denuncias/<id>/triagem` — Atualiza status, score de confiança e justificativa técnica da IA.
-- Proteção por cabeçalho de autenticação `X-API-Key`.
 
 ---
 
@@ -148,7 +141,6 @@ CREATE TABLE users (
     email TEXT NOT NULL UNIQUE,
     data_nascimento TEXT NOT NULL,
     cidade TEXT NOT NULL,
-    endereco TEXT NOT NULL DEFAULT '',
     senha_hash TEXT NOT NULL,
     is_admin INTEGER NOT NULL DEFAULT 0,
     criado_em TEXT NOT NULL DEFAULT (datetime('now', 'localtime'))
@@ -163,9 +155,6 @@ CREATE TABLE reports (
     descricao TEXT NOT NULL,
     anexo TEXT,
     status TEXT NOT NULL DEFAULT 'EM_ANALISE_IA',
-    score_confianca REAL DEFAULT NULL,
-    justificativa_ia TEXT DEFAULT NULL,
-    data_analise_ia TEXT DEFAULT NULL,
     analisado_por_admin_id INTEGER DEFAULT NULL,
     termo_aceito INTEGER NOT NULL DEFAULT 1,
     data_aceite_termo TEXT DEFAULT NULL,
@@ -183,9 +172,10 @@ CREATE TABLE reports (
 
 | Arquivo / Diretório | Finalidade |
 |---|---|
+| `iniciar_protejaja.bat` | Inicializador automático no Windows (instala Python/dependências e abre o navegador) |
 | `run.py` | Inicializador da aplicação Flask na porta 5000 |
 | `test_suite.py` | Suíte de testes automatizados completa cobrindo RF, RNF e segurança |
-| `backend/app.py` | Rotas web, APIs REST, middlewares e controladores |
+| `backend/app.py` | Rotas web, middlewares e controladores |
 | `backend/database.py` | Camada de persistência relacional SQLite e migrações |
 | `backend/profanity.py` | Filtro antiofensa e heurísticas de texto |
 | `backend/news_portal.py` | Agregador de notícias e alertas por categoria |
@@ -198,6 +188,9 @@ CREATE TABLE reports (
 ---
 
 ## 7. Execução e Testes
+
+### Execução Automática no Windows:
+Dê um duplo clique em `iniciar_protejaja.bat` (baixa/detecta o Python, instala `requirements.txt` e abre `http://127.0.0.1:5000/home`).
 
 ### Execução via Python Local:
 ```powershell
@@ -214,4 +207,4 @@ docker compose up -d --build
 ```powershell
 python test_suite.py
 ```
-*(Executa 16 testes em ~3.8s com 100% de aprovação).*
+*(Executa 20 testes com 100% de aprovação).*

@@ -188,9 +188,9 @@
                         {% if user %}
                             <form method="POST" action="/denuncias-publicas/{{ d.id }}/comentar" class="flex flex-col sm:flex-row gap-2">
                                 <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-                                <label for="comentario-{{ d.id }}" class="sr-only">Escrever comentário (obrigatório)</label>
-                                <input type="text" id="comentario-{{ d.id }}" name="comentario" required aria-required="true" minlength="3" maxlength="500"
-                                       class="campo text-xs flex-1" placeholder="Comente sobre esse caso com respeito...">
+                                <label for="comentario-{{ d.id }}" class="sr-only">Escrever comentário <span style="color:#ef4444" aria-hidden="true">*</span></label>
+                                <input type="text" id="comentario-{{ d.id }}" name="comentario" required minlength="3" maxlength="500"
+                                       class="campo text-xs flex-1" placeholder="Comente sobre esse caso com respeito (obrigatório)...">
                                 <button type="submit" class="btn-cyber-outline btn-pequeno whitespace-nowrap">Comentar</button>
                             </form>
                         {% else %}

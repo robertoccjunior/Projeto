@@ -17,7 +17,7 @@ Este documento especifica os requisitos do sistema ProtejaJA, organizados em req
 
 | Código | Requisito Funcional | Local |
 |---|---|---|
-| RF01 | O sistema deve permitir cadastrar usuário com nome e sobrenome separados, e-mail, data de nascimento (exigindo maioridade mínima de 18 anos), município brasileiro oficial (`Cidade - UF` via autocomplete IBGE), senha forte (mínimo 8 caracteres, com pelo menos 1 letra maiúscula e 1 minúscula) e confirmação de senha — todos marcados explicitamente com `*` em vermelho na tela — sem exigência de endereço residencial (minimização LGPD). | Tela Cadastro |
+| RF01 | O sistema deve permitir cadastrar usuário com nome e sobrenome separados, e-mail, data de nascimento (exigindo maioridade mínima de 18 anos), município brasileiro oficial (`Cidade - UF` via autocomplete IBGE), senha forte (mínimo 8 caracteres, com pelo menos 1 letra maiúscula e 1 minúscula) e confirmação de senha — todos marcados explicitamente com `*` em vermelho na tela. | Tela Cadastro |
 | RF02 | O sistema deve permitir o login com e-mail e senha com sessão segura. | Tela Login |
 | RF03 | O sistema deve permitir sair da conta (logout), invalidando a sessão. | Menu |
 | RF04 | O sistema deve permitir registrar denúncia com os campos obrigatórios explicitamente identificados (`*` em vermelho): quem está denunciando, município brasileiro (`Cidade - UF` via autocomplete IBGE), bairro, assunto e descrição detalhada, além de categoria opcional. | Tela Denúncias |
@@ -25,12 +25,11 @@ Este documento especifica os requisitos do sistema ProtejaJA, organizados em req
 | RF06 | O sistema deve bloquear palavras ofensivas, termos de baixo calão e leet-speak (em nomes, cidades, assuntos e descrições). | Todas as telas |
 | RF07 | O sistema deve exigir login ativo para permitir o envio de denúncia. | Tela Denúncias |
 | RF08 | O sistema deve exibir os detalhes completos de uma denúncia (descrição, prova anexada e parecer de moderação) com controle de acesso. | Ver detalhes |
-| RF09 | O sistema deve permitir excluir a conta definitivamente (cadastro, denúncias e provas físicas do disco), com confirmação obrigatória por senha (LGPD). | Menu |
+| RF09 | O sistema deve permitir excluir a conta definitivamente (cadastro, denúncias e provas físicas do disco), com confirmação obrigatória por senha. | Menu |
 | RF10 | O sistema deve dispor de painel do administrador para visualizar ocorrências e aprovar ou rejeitar cada uma. | Painel admin |
-| RF11 | O sistema deve exibir publicamente no blog/feed apenas as denúncias aprovadas, com filtros por categoria e tags temáticas, sem exigir login. | Página pública / Home |
-| RF12 | O sistema deve exigir a leitura e aceite do Termo de Declaração e Responsabilidade Legal com mecanismo *Scroll-to-Agree* antes de liberar o envio da denúncia. | Tela Denúncias |
-| RF13 | O sistema deve fornecer API REST protegida por chave de autenticação (`X-API-Key`) para integração de robôs de triagem por IA com atribuição de score de confiança. | Endpoints `/api/v1/` |
-| RF14 | O sistema deve disponibilizar barra fixa persistente de utilidade pública com discagem direta para telefones de emergência (190, 193, 192, 151, 199, 180, 181). | Rodapé Global |
+| RF11 | O sistema deve exibir publicamente no blog/feed apenas as denúncias aprovadas, com filtros por categoria e município, sem exigir login. | Página pública / Home |
+| RF12 | O sistema deve exigir a leitura e aceite do Termo de Declaração e Responsabilidade Legal antes de liberar o envio da denúncia. | Tela Denúncias |
+| RF13 | O sistema deve disponibilizar barra fixa persistente de utilidade pública com discagem direta para telefones de emergência (190, 193, 192, 151, 199, 180, 181). | Rodapé Global |
 
 ---
 

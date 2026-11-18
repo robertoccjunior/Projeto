@@ -57,7 +57,7 @@ de "colorir". É a planta baixa do site.
 +----------------------------------------------------------+
 ```
 
-**Campos obrigatórios (`* (obrigatório)`):** primeiro nome, sobrenome, e-mail, data de nascimento (mínimo 18 anos), município (`Cidade - UF` via autocomplete IBGE) e senha (sem exigência de endereço residencial, conforme LGPD).
+**Campos obrigatórios (`* (obrigatório)`):** primeiro nome, sobrenome, e-mail, data de nascimento (mínimo 18 anos), município (`Cidade - UF` via autocomplete IBGE) e senha.
 
 ---
 
@@ -73,15 +73,12 @@ de "colorir". É a planta baixa do site.
 |              |-----------------------------|              |
 |              | E-mail  [________]          |              |
 |              | Senha   [________]          |              |
-|              | [    ENTRAR    ] (rosa)     |              |
+|              | [    ENTRAR    ] (neon)     |              |
 |              |                             |              |
-|              | Esqueceu a senha?           |              |
-|              |  > Recuperar senha (link)   |              |
+|              | Não tem conta? Cadastrar    |              |
 |              +-----------------------------+              |
 +----------------------------------------------------------+
 ```
-
-**Destaque:** link **Recuperar senha** bem visível (pedido do professor).
 
 ---
 
@@ -96,15 +93,17 @@ de "colorir". É a planta baixa do site.
 | | Quem você está denunciando? *  [ Hipermercado    ]   |   |
 | | Sobre o que? *                [ Produto vencido ]   |   |
 | | Categoria [ Produto  v ]                             |  |
-| | Descrição [______________________]                   |  |
-| | Prova (anexo) [ Escolher arquivo ] faixa de 5MB      |  |
-| | [     ENVIAR DENÚNCIA    ] (rosa)                    |  |
+| | Município (IBGE) * [______]  Bairro * [______]       |  |
+| | Descrição * [______________________]                 |  |
+| | Prova (anexo) [ Escolher arquivo ] até 5 MB          |  |
+| | [x] Li e aceito o Termo de Responsabilidade Legal    |  |
+| | [     ENVIAR DENÚNCIA    ] (neon)                    |  |
 | --------------------------------------------------------- |
 |                                                          |
 |  Minhas denúncias                                        |
 | --------------------------------------------------------- |
 | | (Produto) 12/09/2026                                  |  |
-| | **Hipermercado**  Produto vencido                        |  |
+| | **Hipermercado**  Produto vencido                    |  |
 | | Comprei e não quiseram trocar...  📎 Ver anexo        |  |
 | --------------------------------------------------------- |
 +----------------------------------------------------------+
@@ -114,29 +113,10 @@ de "colorir". É a planta baixa do site.
 1. Quem você está denunciando? (ex.: **Hipermercado**)
 2. Sobre o que? (ex.: produto vencido)
 3. Categoria
-4. Descrição
-5. Anexo de prova (imagem/PDF/vídeo)
-
----
-
-### 1.5 Wireframe — Tela Recuperar Senha
-
-```
-+----------------------------------------------------------+
-| Logo ProtejaJA          (menu)                            |
-+----------------------------------------------------------+
-|              +-----------------------------+              |
-|              |     Recuperar senha         |              |
-|              |  e-mail + data de nascimento|              |
-|              |-----------------------------|              |
-|              | E-mail  [________]          |              |
-|              | Data nasc. [________]       |              |
-|              | [ GERAR SENHA TEMPORÁRIA ]  |              |
-|              +-----------------------------+              |
-+----------------------------------------------------------+
-```
-
-**Resultado:** se os dados batem, o sistema **mostra a senha temporária** na tela.
+4. Município (`Cidade - UF` via autocomplete IBGE) e Bairro
+5. Descrição
+6. Anexo de prova (imagem/PDF/vídeo até 5 MB)
+7. Aceite do Termo de Responsabilidade Legal
 
 ---
 
@@ -144,41 +124,38 @@ de "colorir". É a planta baixa do site.
 
 ### 2.1 A identidade visual (cores do projeto)
 
-O tema é **rosa** com **letras pretas** e **botões rosa escuro** (decisão de design).
+O tema atual adota o padrão **Dark Neon / Cyberpunk** com alto contraste (conformidade WCAG AAA):
 
 | Elemento | Cor | Código (hex) |
 |---|---|---|
-| Fundo da página (gradiente) | Rosa claro | #ffe4e6 → #fecdd3 |
-| Botão principal | **Rosa escuro** | #be123c |
-| Botão ao passar o mouse | Rosa escuro mais forte | #9f1239 |
-| Letras (texto) | **Preto/** | #0f172a |
-| Fundo dos cards | Branco | #ffffff |
-| Borda dos cards | Rosa claro | #fecdd3 |
-| Etiqueta/categoria | Rosa claro | #ffe4e6 |
+| Fundo da página | Azul-escuro / Preto profundo | `#070a12` |
+| Destaque / Botão principal | **Rosa Neon** | `#ff007f` |
+| Texto principal | Branco / Slate claro | `#f8fafc` / `#cbd5e1` |
+| Fundo dos cards | Slate escuro translúcido | `#0f172a` |
 
 ### 2.2 Como o site "manipula" as imagens (provas de denúncia)
 
-O site recebe a imagem e faz um tratamento antes de guardar:
+O site recebe o arquivo e faz um tratamento antes de guardar:
 
-1. **Verifica o tipo** — só aceita: `png, jpg, jpeg, gif, webp, heic/heif, pdf, mp4, mov`.
-2. **Limita o tamanho** — máximo de **5 MB** (evita travar o site).
-3. **Renomeia com nome seguro** — função `secure_filename` remove caracteres perigosos do nome do arquivo.
-4. **Salva em pasta separada** — `backend/uploads/`, fora das denúncias.
-5. **Gera pré-visualização** — o JavaScript lê o arquivo e mostra uma **miniatura** com redimensionamento via CSS (`object-fit`, bordas arredondadas) antes de enviar.
+1. **Verifica o tipo** — aceita apenas extensões permitidas (imagens, PDF e vídeos configurados em `ALLOWED_EXTENSIONS`).
+2. **Limita o tamanho** — máximo de **5 MB** (`MAX_CONTENT_LENGTH`).
+3. **Renomeia com nome seguro** — usa `secure_filename` + prefixo UUID para evitar sobrescrita e caracteres perigosos.
+4. **Salva em pasta separada** — `backend/uploads/`, fora do banco de dados.
+5. **Gera pré-visualização** — o JavaScript lê o arquivo e mostra uma **miniatura** antes de enviar.
 
-Fluxo da imagem:
+Fluxo do anexo:
 
 ```
-Usuário escolhe a foto
+Usuário escolhe o arquivo
       |
       v
 Navegador mostra miniatura (pré-visualização)
       |
       v
-Servidor verifica tipo + tamanho (máx 5MB)
+Servidor verifica tipo + tamanho (máx 5 MB)
       |
       v
-Salva com nome seguro em /uploads
+Salva com nome seguro em backend/uploads/
       |
       v
 Denúncia lista o anexo com link "Ver anexo"
@@ -186,12 +163,7 @@ Denúncia lista o anexo com link "Ver anexo"
 
 ### 2.3 Manipulação visual no front-end (CSS)
 
-Elementos de imagem tratados pelo `home/css/styles.css`:
-
-| Recurso | Para que serve |
-|---|---|
-| Gradiente rosa (`.pagina-rosa`) | Fundo suave da página |
-| Cards `border-radius` e sombra rosa | Efeito "caixa branca" sobre o rosa |
-| Botão `.btn-rosa` com hover | Feedback visual ao passar o mouse |
-| Miniatura do anexo | `object-cover`, bordas arredondadas (na prévia) |
-| Telas centralizadas | Facilita o foco e a leitura |
+O estilo é carregado via `home/css/styles.min.css` (inlined no `<head>` para carregamento rápido) e `home/css/styles.css`, aplicando:
+- Cards com `border-radius` e bordas sutis sobre o fundo escuro `#070a12`;
+- Botões com realce neon `#ff007f` e feedback visual no `:hover`;
+- Miniaturas com `object-cover` e bordas arredondadas na pré-visualização.

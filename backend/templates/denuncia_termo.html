@@ -36,11 +36,8 @@
 
     <!-- TERMO DE RESPONSABILIDADE LEGAL -->
     <div class="card-cyber">
-        <form method="POST" action="/denuncias/termo" class="space-y-5" id="formTermoDenuncia" aria-describedby="legendaObrigatoriosTermo">
+        <form method="POST" action="/denuncias/termo" class="space-y-5" id="formTermoDenuncia">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
-            <p id="legendaObrigatoriosTermo" class="text-xs text-slate-300">
-                Campos marcados com <span class="text-red-400 font-bold" aria-hidden="true">*</span> são obrigatórios.
-            </p>
 
             <div>
                 <div class="flex items-center justify-between mb-3">
@@ -70,10 +67,10 @@
             </div>
 
             <div class="pt-2 flex items-start gap-3">
-                <input type="checkbox" id="checkTermoAceite" name="termo_responsabilidade" value="1" required aria-required="true"
+                <input type="checkbox" id="checkTermoAceite" name="termo_responsabilidade" value="1" required
                        class="checkbox-cyber mt-0.5 cursor-pointer">
                 <label for="checkTermoAceite" class="text-xs text-slate-200 leading-snug cursor-pointer select-none">
-                    <strong>Confirmo e concordo integralmente</strong> com o Termo de Declaração de Veracidade e Responsabilidade Legal, atestando a autenticidade dos fatos narrados. <span class="text-red-400 font-bold" aria-hidden="true">*</span>
+                    <strong>Confirmo e concordo integralmente</strong> com o Termo de Declaração de Veracidade e Responsabilidade Legal, atestando a autenticidade dos fatos narrados. <span style="color:#ef4444" aria-hidden="true">*</span>
                 </label>
             </div>
 

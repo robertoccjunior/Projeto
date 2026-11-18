@@ -609,28 +609,22 @@ class ProtejaJaTestSuite(unittest.TestCase):
         self.assertIn("Impostos e Dinheiro Público", html_not)
         self.assertNotIn("Verificar Fatos Agora", html_not)
 
-        asterisco = '<span class="text-red-400 font-bold" aria-hidden="true">*</span>'
+        asterisco = '<span style="color:#ef4444" aria-hidden="true">*</span>'
         for rota in ["/cadastro", "/login"]:
             html = self.client.get(rota).data.decode("utf-8")
             self.assertIn(asterisco, html)
-            self.assertIn("Campos marcados com", html)
-            self.assertIn("aria-describedby=", html)
-            self.assertIn('aria-required="true"', html)
 
         html_cad = self.client.get("/cadastro").data.decode("utf-8")
         self.assertIn('name="confirmar_senha"', html_cad)
         self.assertIn('minlength="8"', html_cad)
 
-        # Rotas autenticadas (/denuncias e /excluir-conta) também exibem legenda única, asterisco sem style inline e aria-required
+        # Rotas autenticadas (/denuncias e /excluir-conta) também exibem asterisco vermelho
         admin = db.usuario_por_email(db.ADMIN_EMAIL)
         with self.client.session_transaction() as sess:
             sess["user_id"] = admin["id"]
         for rota_auth in ["/denuncias", "/excluir-conta"]:
             html_auth = self.client.get(rota_auth).data.decode("utf-8")
             self.assertIn(asterisco, html_auth)
-            self.assertIn("Campos marcados com", html_auth)
-            self.assertIn("aria-describedby=", html_auth)
-            self.assertIn('aria-required="true"', html_auth)
 
     def test_23_curtidas_ranking_e_comentarios_publicos(self):
         """Valida curtida ('Também fui afetado'), ranking e comentários com login obrigatório e filtro antiofensa."""

@@ -9,15 +9,15 @@
             │    VISITANTE     │   (não logado)
             └──────────────────┘
                  │
-                 │  UC01 Cadastrar-se (sem exigência de endereço)
+                 │  UC01 Cadastrar-se 
                  │  UC02 Entrar (login)
                  │  UC09 Consultar Portal de Notícias e Alertas
-                 │  UC11 Consultar feed comunitário com tags
+                 │  UC11 Consultar feed comunitário
                  │  UC14 Acessar telefones de emergência 24h
                  ▼
         ┌──────────────────────┐
         │       ProtejaJA      │
-        │  Sistema de Denúncias │
+        │ Sistema de Denúncias │
         └──────────────────────┘
                  ▲
                  │
@@ -26,12 +26,12 @@
             └──────────────────┘
                  │
                  │  UC04 Enviar denúncia com cidade/bairro
-                 │  UC05 Anexar prova (até 5 MB)
+                 │  UC05 Anexar prova (até 5 MB) PDF, foto ou vídeo
                  │  UC06 Ver minhas denúncias
                  │  UC07 Ver detalhes de uma denúncia
                  │  UC08 Sair (logout)
-                 │  UC12 Excluir conta e expurgar dados (LGPD)
-                 │  UC13 Ler e aceitar Termo Legal (Scroll-to-Agree)
+                 │  UC12 Excluir conta e expurgar dados 
+                 │  UC13 Ler e aceitar Termo Legal
                  ▼
             ┌──────────────────┐
             │  ADMINISTRADOR   │   (painel admin)
@@ -47,7 +47,7 @@
 
 | Código | Caso de uso | Ator principal | Objetivo |
 |---|---|---|---|
-| **UC01** | Cadastrar-se | Visitante | Criar conta (18+ anos) com nome, sobrenome, e-mail, data de nascimento, município (`Cidade - UF` via IBGE), senha forte (mín. 8 caracteres, 1 maiúscula e 1 minúscula) e confirmação de senha (sem exigir endereço residencial) |
+| **UC01** | Cadastrar-se | Visitante | Criar conta (18+ anos) com nome, sobrenome, e-mail, data de nascimento, município (`Cidade - UF` via IBGE), senha forte (mín. 8 caracteres, 1 maiúscula e 1 minúscula) e confirmação de senha |
 | **UC02** | Entrar | Visitante | Acessar a conta com e-mail e senha com sessão segura |
 | **UC04** | Enviar denúncia | Usuário | Registrar quem está denunciando, o quê, categoria, cidade, bairro e descrição |
 | **UC05** | Anexar prova | Usuário | Enviar imagem/PDF/vídeo (máx. 5 MB) junto à denúncia |
@@ -56,22 +56,21 @@
 | **UC08** | Sair | Usuário | Encerrar a sessão com segurança |
 | **UC09** | Consultar Portal de Notícias | Visitante / Usuário | Visualizar notícias e alertas filtrados por tema (`/noticias`) |
 | **UC10** | Moderar denúncias | Administrador | Analisar ocorrências no painel admin e aprovar para publicação ou rejeitar |
-| **UC11** | Consultar feed público de denúncias | Visitante | Navegar pelo blog comunitário de ocorrências auditadas com filtros por tags |
-| **UC12** | Excluir conta e dados (LGPD) | Usuário | Excluir definitivamente cadastro, denúncias e apagar fotos do disco com senha |
-| **UC13** | Aceitar Termo Legal (Scroll-to-Agree) | Usuário | Rolar integralmente o contrato de responsabilidade para liberar o envio da denúncia |
+| **UC11** | Consultar feed público de denúncias | Visitante | Navegar pelo blog comunitário de ocorrências auditadas com filtros por categoria e município |
+| **UC12** | Excluir conta e dados | Usuário | Excluir definitivamente cadastro, denúncias e apagar fotos do disco com senha |
+| **UC13** | Aceitar Termo Legal | Usuário | Ler e aceitar o contrato de responsabilidade para liberar o envio da denúncia |
 | **UC14** | Discagem de emergência 24h | Visitante / Usuário | Acessar com 1 toque links diretos para 190, 193, 192, 151, 199, 180 e 181 |
 
 ---
 
 ## 3. Casos de uso em detalhe
 
-### UC01 — Cadastrar-se (Minimização de Dados LGPD e Maioridade 18+)
+### UC01 — Cadastrar-se (Maioridade 18+)
 
 1. Visitante clica em **Cadastrar**.
 2. Preenche os campos marcados como `*` (vermelho): primeiro nome, sobrenome, e-mail, data de nascimento (validando idade mínima de **18 anos**), seleciona qualquer um dos 5.570 municípios brasileiros no autocomplete IBGE (`Cidade - UF`), cria uma senha forte (mínimo 8 caracteres, com pelo menos 1 letra maiúscula e 1 minúscula) e repete no campo de confirmação.
 3. O sistema valida maioridade (>= 18 anos), município oficial do IBGE, campos obrigatórios e aplica o filtro antiofensa.
-4. **Nota de conformidade:** O endereço residencial não é solicitado, protegendo a privacidade física do cidadão.
-5. Sistema grava a senha com hash `scrypt` e redireciona para o login com mensagem de sucesso.
+4. Sistema grava a senha com hash `scrypt` e redireciona para o login com mensagem de sucesso.
 
 ### UC04 — Enviar denúncia
 
@@ -82,11 +81,11 @@
 5. Seleciona a **cidade** e digita o **bairro** da ocorrência.
 6. Escreve a **descrição** (filtro antiofensa valida o texto em tempo real).
 7. (Opcional) **anexa a prova** (máximo 5 MB).
-8. Rola o Termo de Responsabilidade até o fim (*Scroll-to-Agree*) e marca o checkbox de ciência legal.
+8. Lê o Termo de Responsabilidade e marca o checkbox de ciência legal.
 9. Clica em **Enviar denúncia**.
 10. Ocorrência é registrada com status `EM_ANALISE_IA` e enviada à moderação.
 
-### UC12 — Excluir conta definitivamente (LGPD)
+### UC12 — Excluir conta definitivamente
 
 1. Usuário acessa `/excluir-conta`.
 2. O sistema exibe alerta informando que a operação é irreversível.
