@@ -1,0 +1,1178 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Apresentação // ProtejaJÁ — Projeto Integrador SENAC</title>
+    <style>
+        /* ==========================================================================
+           PROTEJAJÁ // SLIDE DECK INTERATIVO + ROTEIRO DE FALA
+           Atalhos: Setas (← →), Espaço, F (Tela Cheia), R (Mostrar/Ocultar Fala)
+           ========================================================================== */
+        :root {
+            --bg-dark: #070a12;
+            --bg-surface: #0f172a;
+            --bg-card: rgba(15, 23, 42, 0.88);
+            --border-color: #1e293b;
+            --border-glow: rgba(255, 0, 127, 0.42);
+            --neon-pink: #ff007f;
+            --neon-rose: #f43f5e;
+            --neon-emerald: #10b981;
+            --neon-amber: #f59e0b;
+            --neon-blue: #3b82f6;
+            --text-primary: #ffffff;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
+            --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            --font-mono: ui-monospace, SFMono-Regular, "Cascadia Code", "Source Code Pro", Menlo, Consolas, monospace;
+        }
+
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            background-image:
+                radial-gradient(circle at 12% 18%, rgba(255, 0, 127, 0.14) 0%, transparent 40%),
+                radial-gradient(circle at 88% 82%, rgba(217, 70, 239, 0.10) 0%, transparent 45%),
+                linear-gradient(rgba(255, 255, 255, 0.018) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.018) 1px, transparent 1px);
+            background-size: 100% 100%, 100% 100%, 44px 44px, 44px 44px;
+            color: var(--text-primary);
+            font-family: var(--font-sans);
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            flex-direction: column;
+            user-select: none;
+        }
+
+        /* BARRA SUPERIOR */
+        .top-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px 32px;
+            background: rgba(7, 10, 18, 0.92);
+            border-bottom: 1px solid var(--border-color);
+            backdrop-filter: blur(12px);
+            z-index: 30;
+            height: 58px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-weight: 900;
+            font-size: 20px;
+            letter-spacing: 0.04em;
+        }
+
+        .brand span {
+            color: var(--neon-pink);
+            text-shadow: 0 0 14px rgba(255, 0, 127, 0.65);
+        }
+
+        .top-meta {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .pill-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(255, 0, 127, 0.14);
+            color: #ff66b2;
+            border: 1px solid rgba(255, 0, 127, 0.4);
+            border-radius: 9999px;
+            padding: 4px 12px;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            font-family: var(--font-mono);
+        }
+
+        .pill-emerald {
+            background: rgba(16, 185, 129, 0.15);
+            color: #34d399;
+            border-color: rgba(16, 185, 129, 0.4);
+        }
+
+        .pill-amber {
+            background: rgba(245, 158, 11, 0.15);
+            color: #fbbf24;
+            border-color: rgba(245, 158, 11, 0.4);
+        }
+
+        .pill-blue {
+            background: rgba(59, 130, 246, 0.15);
+            color: #60a5fa;
+            border-color: rgba(59, 130, 246, 0.4);
+        }
+
+        /* CONTAINER DE SLIDES */
+        .deck-viewport {
+            flex: 1;
+            position: relative;
+            width: 100%;
+            max-width: 1320px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px 44px;
+            overflow: hidden;
+        }
+
+        .slide {
+            display: none;
+            width: 100%;
+            height: 100%;
+            flex-direction: column;
+            justify-content: center;
+            animation: slideFadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .slide.active {
+            display: flex;
+        }
+
+        @keyframes slideFadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* CABEÇALHO DO SLIDE */
+        .slide-header {
+            margin-bottom: 22px;
+        }
+
+        .slide-kicker {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+        }
+
+        .slide-num {
+            font-family: var(--font-mono);
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--neon-pink);
+            background: rgba(255, 0, 127, 0.12);
+            border: 1px solid rgba(255, 0, 127, 0.35);
+            padding: 2px 9px;
+            border-radius: 6px;
+        }
+
+        .slide-title {
+            font-size: clamp(28px, 3.2vw, 44px);
+            font-weight: 900;
+            letter-spacing: -0.02em;
+            line-height: 1.15;
+            color: #ffffff;
+        }
+
+        .slide-title .accent {
+            color: var(--neon-pink);
+            text-shadow: 0 0 18px rgba(255, 0, 127, 0.45);
+        }
+
+        .slide-subtitle {
+            font-size: clamp(15px, 1.3vw, 18px);
+            color: var(--text-secondary);
+            margin-top: 6px;
+            max-width: 900px;
+            line-height: 1.5;
+        }
+
+        /* GRIDS & CARDS */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+        }
+
+        .grid-4 {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            padding: 22px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+            transition: border-color 0.2s, transform 0.2s;
+        }
+
+        .card:hover {
+            border-color: var(--border-glow);
+            transform: translateY(-2px);
+        }
+
+        .card-highlight {
+            border-color: rgba(255, 0, 127, 0.48);
+            background: linear-gradient(160deg, rgba(255, 0, 127, 0.11) 0%, rgba(15, 23, 42, 0.92) 65%);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6), 0 0 24px rgba(255, 0, 127, 0.14);
+        }
+
+        .card-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 12px;
+            background: rgba(255, 0, 127, 0.14);
+            border: 1px solid rgba(255, 0, 127, 0.35);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #ff66b2;
+            flex-shrink: 0;
+        }
+
+        .card-icon svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        .card-title {
+            font-size: 19px;
+            font-weight: 800;
+            color: #ffffff;
+        }
+
+        .card-text {
+            font-size: 15px;
+            color: var(--text-secondary);
+            line-height: 1.55;
+        }
+
+        .metric-big {
+            font-size: clamp(32px, 3.8vw, 50px);
+            font-weight: 900;
+            font-family: var(--font-mono);
+            color: var(--neon-pink);
+            text-shadow: 0 0 20px rgba(255, 0, 127, 0.45);
+            line-height: 1;
+        }
+
+        .metric-emerald {
+            color: #34d399;
+            text-shadow: 0 0 20px rgba(16, 185, 129, 0.35);
+        }
+
+        .feature-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 11px;
+            margin-top: 4px;
+        }
+
+        .feature-list li {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            font-size: 15px;
+            color: var(--text-secondary);
+            line-height: 1.45;
+        }
+
+        .check-dot {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: rgba(255, 0, 127, 0.2);
+            border: 1px solid var(--neon-pink);
+            color: #ff66b2;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 11px;
+            font-weight: 900;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .check-emerald {
+            background: rgba(16, 185, 129, 0.2);
+            border-color: #10b981;
+            color: #34d399;
+        }
+
+        .banner-bottom {
+            margin-top: 18px;
+            padding: 15px 22px;
+            border-radius: 14px;
+            background: rgba(255, 0, 127, 0.10);
+            border: 1px solid rgba(255, 0, 127, 0.38);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            font-size: 15px;
+            color: #f8fafc;
+        }
+
+        .code-inline {
+            font-family: var(--font-mono);
+            font-size: 13px;
+            background: rgba(2, 6, 23, 0.9);
+            border: 1px solid #334155;
+            padding: 2px 7px;
+            border-radius: 5px;
+            color: #fda4af;
+        }
+
+        .step-badge {
+            width: 34px;
+            height: 34px;
+            border-radius: 9px;
+            background: linear-gradient(135deg, #ff007f, #e11d48);
+            color: #fff;
+            font-family: var(--font-mono);
+            font-weight: 800;
+            font-size: 15px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 0 12px rgba(255, 0, 127, 0.5);
+            flex-shrink: 0;
+        }
+
+        /* CAIXA DE ROTEIRO DE FALA (TELEPROMPTER) */
+        .speaker-box {
+            display: none;
+            margin-top: 16px;
+            padding: 14px 20px;
+            border-radius: 12px;
+            background: rgba(2, 6, 23, 0.92);
+            border-left: 4px solid var(--neon-pink);
+            border-top: 1px solid #334155;
+            border-right: 1px solid #334155;
+            border-bottom: 1px solid #334155;
+            font-size: 14px;
+            line-height: 1.55;
+            color: #e2e8f0;
+        }
+
+        body.show-notes .speaker-box {
+            display: block;
+        }
+
+        .speaker-label {
+            font-family: var(--font-mono);
+            font-size: 11px;
+            font-weight: 800;
+            text-transform: uppercase;
+            color: #ff66b2;
+            letter-spacing: 0.06em;
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        /* BARRA DE CONTROLES INFERIOR */
+        .bottom-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 32px;
+            background: rgba(7, 10, 18, 0.94);
+            border-top: 1px solid var(--border-color);
+            height: 56px;
+            z-index: 30;
+        }
+
+        .progress-track {
+            position: fixed;
+            bottom: 56px;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.06);
+            z-index: 35;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #ff007f, #f43f5e, #d946ef);
+            box-shadow: 0 0 12px #ff007f;
+            width: 9%;
+            transition: width 0.25s ease;
+        }
+
+        .nav-controls {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-ctrl {
+            background: rgba(255, 255, 255, 0.06);
+            color: #f8fafc;
+            border: 1px solid #334155;
+            border-radius: 8px;
+            padding: 6px 13px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.15s;
+        }
+
+        .btn-ctrl:hover, .btn-ctrl.active-toggle {
+            border-color: var(--neon-pink);
+            background: rgba(255, 0, 127, 0.18);
+            color: #ffffff;
+        }
+
+        .btn-primary-ctrl {
+            background: linear-gradient(135deg, #ff007f, #e11d48);
+            border-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .slide-dots {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 999px;
+            background: #334155;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: none;
+        }
+
+        .dot.active {
+            width: 24px;
+            background: var(--neon-pink);
+            box-shadow: 0 0 8px var(--neon-pink);
+        }
+
+        @media print {
+            body {
+                overflow: visible;
+                height: auto;
+                background: #070a12 !important;
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            .top-bar, .bottom-bar, .progress-track {
+                display: none !important;
+            }
+            .deck-viewport {
+                display: block;
+                padding: 0;
+                max-width: 100%;
+            }
+            .slide {
+                display: flex !important;
+                page-break-after: always;
+                break-after: page;
+                height: 100vh;
+                padding: 36px 48px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- TOP BAR -->
+    <header class="top-bar">
+        <div class="brand">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="#ff007f">
+                <path d="M12 1L3 5v6c0 5.55 3.84 10.74 9 12 5.16-1.26 9-6.45 9-12V5l-9-4zm0 2.18l7 3.11v5.71c0 4.67-3.13 8.96-7 10-3.87-1.04-7-5.33-7-10V6.29l7-3.11z"/>
+                <path d="M11 7h2v6h-2zm0 8h2v2h-2z" fill="#ffffff"/>
+            </svg>
+            <div>Proteja<span>JÁ</span></div>
+        </div>
+        <div class="top-meta">
+            <span>Projeto Integrador &bull; SENAC Araraquara</span>
+            <span class="pill-badge">5.570 Municípios do Brasil</span>
+            <a href="/home" class="btn-ctrl" style="text-decoration: none; padding: 4px 10px; font-size: 12px;">&larr; Abrir Site ao Vivo</a>
+        </div>
+    </header>
+
+    <!-- SLIDES -->
+    <main class="deck-viewport">
+
+        <!-- =================================================================
+             SLIDE 1: CAPA (PARTE 1 - VÍDEO + ABERTURA)
+             ================================================================= -->
+        <section class="slide active" data-slide="1">
+            <div class="grid-2" style="align-items: center; gap: 36px;">
+                <div>
+                    <div class="slide-kicker">
+                        <span class="pill-badge">Projeto Integrador &bull; SENAC Araraquara</span>
+                    </div>
+                    <h1 style="font-size: clamp(46px, 5.8vw, 74px); font-weight: 900; letter-spacing: -0.03em; line-height: 1.05; margin-bottom: 14px;">
+                        Proteja<span style="color: var(--neon-pink); text-shadow: 0 0 24px rgba(255,0,127,0.6);">JÁ</span>
+                    </h1>
+                    <p style="font-size: clamp(19px, 2.1vw, 25px); color: #f8fafc; font-weight: 700; margin-bottom: 14px;">
+                        Plataforma cidadã de denúncias seguras
+                    </p>
+                    <p style="font-size: 16px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 24px;">
+                        Rede social cidadã que une relatos reais com provas em todos os <strong>5.570 municípios do Brasil</strong> para dar força coletiva ao consumidor.
+                    </p>
+                    <div style="display: flex; flex-wrap: wrap; gap: 10px;">
+                        <span class="pill-badge">▶ 1º Passo: Dar Play no Vídeo da Home</span>
+                    </div>
+                </div>
+
+                <div class="card card-highlight" style="padding: 28px;">
+                    <div style="display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 12px; margin-bottom: 10px;">
+                        <span style="font-family: var(--font-mono); font-size: 12px; text-transform: uppercase; letter-spacing: 0.1em; color: #ff66b2; font-weight: 700;">Equipe</span>
+                        <span style="font-family: var(--font-mono); font-size: 12px; color: var(--text-muted);">SENAC Araraquara</span>
+                    </div>
+                    <div style="display: flex; flex-direction: column; gap: 12px;">
+                        <div style="display: flex; align-items: center; gap: 14px; padding: 12px 16px; background: rgba(7,10,18,0.65); border-radius: 12px; border: 1px solid #1e293b;">
+                            <div class="step-badge">1</div>
+                            <div style="font-weight: 800; font-size: 16px; color: #fff;">ALINE DE CASTRO</div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 14px; padding: 12px 16px; background: rgba(7,10,18,0.65); border-radius: 12px; border: 1px solid #1e293b;">
+                            <div class="step-badge">2</div>
+                            <div style="font-weight: 800; font-size: 16px; color: #fff;">ROBERTO CARLOS CORREA JUNIOR</div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 14px; padding: 12px 16px; background: rgba(7,10,18,0.65); border-radius: 12px; border: 1px solid #1e293b;">
+                            <div class="step-badge">3</div>
+                            <div style="font-weight: 800; font-size: 16px; color: #fff;">IVAN GUIMARÃES</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="speaker-box">
+                <span class="speaker-label">🎤 Parte 1 — Abertura (Dê play no vídeo da tela inicial antes de falar):</span>
+                “Boa tarde/noite! Como vocês viram no vídeo, todo dia alguém passa por um problema parecido: compra um produto estragado ou com peso errado na balança, sofre uma cobrança abusiva ou recebe uma ligação falsa tentando roubar o cartão.”
+            </div>
+        </section>
+
+        <!-- =================================================================
+             SLIDE 2: O PROBLEMA (PARTE 1)
+             ================================================================= -->
+        <section class="slide" data-slide="2">
+            <div class="slide-header">
+                <div class="slide-kicker">
+                    <span class="slide-num">02 / 11</span>
+                    <span class="pill-badge">Parte 1 &bull; O Problema</span>
+                </div>
+                <h2 class="slide-title">O problema do <span class="accent">dia a dia</span></h2>
+                <p class="slide-subtitle">Todo dia alguém passa por um prejuízo parecido, mas reclama sozinho.</p>
+            </div>
+
+            <div class="grid-3">
+                <article class="card">
+                    <div class="card-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/><polyline points="3.27 6.96 12 12.01 20.73 6.96"/><line x1="12" y1="22.08" x2="12" y2="12"/></svg>
+                    </div>
+                    <h3 class="card-title">Produto</h3>
+                    <p class="card-text">Produto estragado, vencido ou com peso errado na balança.</p>
+                </article>
+
+                <article class="card">
+                    <div class="card-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                    </div>
+                    <h3 class="card-title">Cobrança</h3>
+                    <p class="card-text">Cobrança abusiva ou taxa indevida sem explicação.</p>
+                </article>
+
+                <article class="card">
+                    <div class="card-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                    </div>
+                    <h3 class="card-title">Golpe</h3>
+                    <p class="card-text">Ligação falsa da central tentando roubar o cartão ou golpe do Pix.</p>
+                </article>
+            </div>
+
+            <div class="banner-bottom">
+                <div>
+                    <strong>Cada pessoa reclama sozinha e ninguém fica sabendo.</strong><br>
+                    O <span style="color: #ff66b2; font-weight: 800;">ProtejaJÁ</span> une as denúncias numa rede social cidadã: quando vários relatam o mesmo problema, o caso ganha força!
+                </div>
+            </div>
+
+            <div class="speaker-box">
+                <span class="speaker-label">🎤 Parte 1 — O que falar neste slide:</span>
+                “O problema é que cada pessoa reclama sozinha e ninguém fica sabendo. O ProtejaJÁ nasceu para juntar essas denúncias em uma rede social cidadã: quando várias pessoas relatam o mesmo problema, o caso ganha força e cobra providências reais da empresa.”
+            </div>
+        </section>
+
+        <!-- =================================================================
+             SLIDE 3: COMO O SITE É ORGANIZADO POR DENTRO (PARTE 2)
+             ================================================================= -->
+        <section class="slide" data-slide="3">
+            <div class="slide-header">
+                <div class="slide-kicker">
+                    <span class="slide-num">03 / 11</span>
+                    <span class="pill-badge">Parte 2 &bull; Estrutura Técnica</span>
+                </div>
+                <h2 class="slide-title">Como o site é <span class="accent">organizado por dentro</span></h2>
+                <p class="slide-subtitle">Arquitetura simples, direta e automática desde o momento em que o servidor liga.</p>
+            </div>
+
+            <div class="grid-4">
+                <article class="card">
+                    <div class="card-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></svg>
+                    </div>
+                    <h3 class="card-title">Back-end</h3>
+                    <p class="card-text"><strong>Python + Flask</strong></p>
+                    <p class="card-text">Recebe os acessos do usuário no navegador, aplica as regras e decide qual tela mostrar.</p>
+                </article>
+
+                <article class="card card-highlight">
+                    <div class="card-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/></svg>
+                    </div>
+                    <h3 class="card-title">Banco SQLite</h3>
+                    <p class="card-text"><strong>Arquivo <span class="code-inline">app.db</span></strong></p>
+                    <p class="card-text">Guarda usuários, denúncias, comentários e curtidas. Ao ligar (<span class="code-inline">init_db</span>), cria as tabelas e a conta Admin sozinho.</p>
+                </article>
+
+                <article class="card">
+                    <div class="card-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+                    </div>
+                    <h3 class="card-title">Front-end</h3>
+                    <p class="card-text"><strong>HTML5, CSS e JS</strong></p>
+                    <p class="card-text">Visual <em>Dark Neon</em> com classes estilo Tailwind em CSS local: leve e fácil de ler no celular e no computador.</p>
+                </article>
+
+                <article class="card">
+                    <div class="card-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 12.5V6a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2v12c0 1.1.9 2 2 2h8"/><path d="M16 19h6"/><path d="M19 16v6"/></svg>
+                    </div>
+                    <h3 class="card-title">Infraestrutura</h3>
+                    <p class="card-text"><strong>Docker</strong></p>
+                    <p class="card-text">Empacota todo o sistema para rodar igual em qualquer máquina ou servidor na nuvem.</p>
+                </article>
+            </div>
+
+            <div class="speaker-box">
+                <span class="speaker-label">🎤 Parte 2 — O que falar neste slide:</span>
+                “O sistema foi feito em Python usando Flask (que recebe os acessos do usuário no navegador e decide qual tela mostrar) e um banco de dados SQLite (<span class="code-inline">app.db</span>), que guarda os usuários, as denúncias, os comentários e as curtidas. Quando o sistema liga (<span class="code-inline">init_db</span>), ele já cria as tabelas sozinho e garante que existe uma conta de Administrador para moderar o que vai ao ar.”
+            </div>
+        </section>
+
+        <!-- =================================================================
+             SLIDE 4: FRONT-END LEVE E ACESSÍVEL (PARTE 2)
+             ================================================================= -->
+        <section class="slide" data-slide="4">
+            <div class="slide-header">
+                <div class="slide-kicker">
+                    <span class="slide-num">04 / 11</span>
+                    <span class="pill-badge">Parte 2 &bull; Telas e Visual</span>
+                </div>
+                <h2 class="slide-title">Front-end: <span class="accent">leve, rápido e fácil de ler</span></h2>
+                <p class="slide-subtitle">Pensado para abrir rápido tanto no celular quanto no computador, inclusive para quem tem dificuldade visual.</p>
+            </div>
+
+            <div class="grid-3">
+                <div class="card card-highlight" style="text-align: center; align-items: center; padding: 26px;">
+                    <div class="metric-big">Dark Neon</div>
+                    <div style="font-weight: 800; font-size: 17px; color: #fff;">Alto Contraste Visual</div>
+                    <p class="card-text">Fundo escuro com letras claras e destaque rosa neon para facilitar a leitura sem cansar a vista.</p>
+                </div>
+
+                <div class="card" style="text-align: center; align-items: center; padding: 26px;">
+                    <div class="metric-big metric-emerald">CSS Local</div>
+                    <div style="font-weight: 800; font-size: 17px; color: #fff;">Classes estilo Tailwind</div>
+                    <p class="card-text">Estilos compilados dentro do próprio projeto (<span class="code-inline">styles.min.css</span>): carrega na hora sem depender de links externos.</p>
+                </div>
+
+                <div class="card" style="text-align: center; align-items: center; padding: 26px;">
+                    <div class="metric-big">3,6 KiB</div>
+                    <div style="font-weight: 800; font-size: 17px; color: #fff;">JavaScript Puro</div>
+                    <p class="card-text">Script super leve para abrir os menus, mostrar anexos de provas e buscar as cidades instantaneamente.</p>
+                </div>
+            </div>
+
+            <div class="speaker-box">
+                <span class="speaker-label">🎤 Parte 2 — O que falar neste slide:</span>
+                “As telas foram feitas em HTML, CSS e JavaScript puro com o visual Dark Neon, pensado para ser super leve, abrir na hora e ser fácil de ler tanto no celular quanto no computador, inclusive para quem tem dificuldade visual.”
+            </div>
+        </section>
+
+        <!-- =================================================================
+             SLIDE 5: CADASTRO E CIDADES DO BRASIL (PARTE 3)
+             ================================================================= -->
+        <section class="slide" data-slide="5">
+            <div class="slide-header">
+                <div class="slide-kicker">
+                    <span class="slide-num">05 / 11</span>
+                    <span class="pill-badge">Parte 3 &bull; Cadastro e Localização</span>
+                </div>
+                <h2 class="slide-title">Cadastro rápido e <span class="accent">cidades do Brasil</span></h2>
+                <p class="slide-subtitle">Pedimos só o mínimo necessário e filtramos qualquer município brasileiro na hora.</p>
+            </div>
+
+            <div class="grid-2">
+                <article class="card">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 6px;">
+                        <div class="card-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+                        </div>
+                        <h3 class="card-title">Cadastro mínimo</h3>
+                    </div>
+                    <ul class="feature-list">
+                        <li><span class="check-dot">✓</span> <span><strong>Nome e sobrenome</strong></span></li>
+                        <li><span class="check-dot">✓</span> <span><strong>E-mail e senha forte</strong> (mínimo 8 caracteres, maiúscula e minúscula)</span></li>
+                        <li><span class="check-dot">✓</span> <span><strong>Data de nascimento</strong> (o sistema só aceita <strong>maiores de 18 anos</strong>)</span></li>
+                        <li><span class="check-dot">✓</span> <span><strong>Cidade</strong> onde mora</span></li>
+                    </ul>
+                </article>
+
+                <article class="card card-highlight">
+                    <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-bottom: 6px;">
+                        <div style="display: flex; align-items: center; gap: 12px;">
+                            <div class="card-icon">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+                            </div>
+                            <h3 class="card-title">Cidade com autocomplete</h3>
+                        </div>
+                        <div class="metric-big" style="font-size: 38px;">5.570</div>
+                    </div>
+                    <p class="card-text">Todos os <strong>5.570 municípios do Brasil</strong> carregados da base oficial do IBGE (<span class="code-inline">municipios.json</span>).</p>
+                    <ul class="feature-list">
+                        <li><span class="check-dot check-emerald">⚡</span> <span>Quando você começa a digitar (ex.: <span class="code-inline">Araraquara - SP</span>), ele já filtra na hora em <strong>menos de 100 milissegundos</strong>.</span></li>
+                        <li><span class="check-dot check-emerald">⚡</span> <span>Funciona mesmo se digitar sem acento ou tudo em letra minúscula.</span></li>
+                    </ul>
+                </article>
+            </div>
+
+            <div class="speaker-box">
+                <span class="speaker-label">🎤 Parte 3 — O que falar neste slide:</span>
+                “Para denunciar, a pessoa faz um cadastro rápido. A gente só pede o mínimo necessário (nome, sobrenome, e-mail, data de nascimento, cidade e senha), e o sistema só aceita maiores de 18 anos. Na hora de escolher a cidade, o site tem um autocomplete com todos os 5.570 municípios do Brasil (da base oficial do IBGE). Quando você começa a digitar, como Araraquara - SP, ele já filtra na hora em menos de 100 milissegundos.”
+            </div>
+        </section>
+
+        <!-- =================================================================
+             SLIDE 6: SEGURANÇA E EXCLUSÃO DE CONTA (PARTE 3)
+             ================================================================= -->
+        <section class="slide" data-slide="6">
+            <div class="slide-header">
+                <div class="slide-kicker">
+                    <span class="slide-num">06 / 11</span>
+                    <span class="pill-badge">Parte 3 &bull; Proteção de Dados</span>
+                </div>
+                <h2 class="slide-title">Segurança e <span class="accent">controle da conta</span></h2>
+                <p class="slide-subtitle">Como protegemos as senhas, o banco de dados e a privacidade do usuário.</p>
+            </div>
+
+            <div class="grid-2">
+                <article class="card">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 6px;">
+                        <div class="card-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                        </div>
+                        <h3 class="card-title">Proteção no código</h3>
+                    </div>
+                    <ul class="feature-list">
+                        <li><span class="check-dot">✓</span> <span><strong>Senha criptografada (<span class="code-inline">scrypt</span>):</strong> nunca é salva em texto normal; ninguém consegue ler a senha no banco.</span></li>
+                        <li><span class="check-dot">✓</span> <span><strong>Contra SQL Injection:</strong> o banco usa consultas preparadas (com <span class="code-inline">?</span>) em todas as buscas.</span></li>
+                        <li><span class="check-dot">✓</span> <span><strong>Filtro contra palavrões (<span class="code-inline">profanity.py</span>):</strong> barra ofensas mesmo se trocar letras por números (ex.: 4 por A, 3 por E).</span></li>
+                    </ul>
+                </article>
+
+                <article class="card card-highlight">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 6px;">
+                        <div class="card-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                        </div>
+                        <h3 class="card-title">Botão Excluir Conta</h3>
+                    </div>
+                    <p class="card-text">Se o usuário quiser sair de vez do sistema (<span class="code-inline">/excluir-conta</span>):</p>
+                    <ul class="feature-list">
+                        <li><span class="check-dot check-emerald">✓</span> <span>Ele confirma a própria senha por segurança.</span></li>
+                        <li><span class="check-dot check-emerald">✓</span> <span>O sistema <strong>apaga o cadastro e todas as denúncias</strong> do banco de dados.</span></li>
+                        <li><span class="check-dot check-emerald">✓</span> <span>E <strong>apaga até as fotos e vídeos de prova</strong> salvos na pasta do servidor.</span></li>
+                    </ul>
+                </article>
+            </div>
+
+            <div class="speaker-box">
+                <span class="speaker-label">🎤 Parte 3 — O que falar neste slide:</span>
+                “Na parte de segurança: a senha nunca é salva em texto normal — ela passa por criptografia (<span class="code-inline">scrypt</span>), então ninguém consegue ler a senha no banco. O banco usa consultas preparadas (com <span class="code-inline">?</span>), que bloqueiam ataques de SQL Injection. Temos um filtro automático contra palavrões (<span class="code-inline">profanity.py</span>) que barra xingamentos mesmo trocando letras por números. E se o usuário quiser sair de vez, tem o botão de Excluir Conta: ele confirma a senha e o sistema apaga o cadastro, as denúncias e até as fotos/vídeos do servidor.”
+            </div>
+        </section>
+
+        <!-- =================================================================
+             SLIDE 7: FLUXO DE UMA DENÚNCIA (PARTE 4)
+             ================================================================= -->
+        <section class="slide" data-slide="7">
+            <div class="slide-header">
+                <div class="slide-kicker">
+                    <span class="slide-num">07 / 11</span>
+                    <span class="pill-badge">Parte 4 &bull; Passo a Passo</span>
+                </div>
+                <h2 class="slide-title">Fluxo de uma <span class="accent">denúncia na prática</span></h2>
+                <p class="slide-subtitle">A denúncia não vai direto para o ar: exigimos termo legal e aprovação do moderador.</p>
+            </div>
+
+            <div class="grid-4" style="margin-bottom: 18px;">
+                <article class="card">
+                    <span class="step-badge">1</span>
+                    <h3 class="card-title">Fazer Denúncia</h3>
+                    <p class="card-text">Preenche quem está denunciando, o motivo, a cidade e o bairro, e pode anexar <strong>foto, PDF ou vídeo de até 5 MB</strong> como prova.</p>
+                </article>
+
+                <article class="card">
+                    <span class="step-badge">2</span>
+                    <h3 class="card-title">Termo Legal</h3>
+                    <p class="card-text">É obrigado a aceitar o <strong>Termo de Responsabilidade Legal</strong> — avisando que denúncia falsa é crime — para evitar trotes.</p>
+                </article>
+
+                <article class="card">
+                    <span class="step-badge">3</span>
+                    <h3 class="card-title">Moderação</h3>
+                    <p class="card-text">Vai para o Painel do Administrador (<span class="code-inline">/admin</span>), onde o moderador olha o relato e a prova e decide se <strong>Aprova ou Rejeita</strong>.</p>
+                </article>
+
+                <article class="card card-highlight">
+                    <span class="step-badge">4</span>
+                    <h3 class="card-title">Feed Público</h3>
+                    <p class="card-text"><strong>Só as aprovadas</strong> aparecem no feed público para a comunidade ver, apoiar e comentar.</p>
+                </article>
+            </div>
+
+            <div class="banner-bottom" style="justify-content: center; font-family: var(--font-mono); font-size: 14px; gap: 16px;">
+                <span>Status no banco:</span>
+                <span class="pill-badge pill-amber">EM_ANALISE_IA</span>
+                <span>&rarr;</span>
+                <span class="pill-badge pill-emerald">APROVADO</span>
+            </div>
+
+            <div class="speaker-box">
+                <span class="speaker-label">🎤 Parte 4 — O que falar neste slide:</span>
+                “Quando o usuário logado vai em Fazer Denúncia, ele preenche quem está denunciando, o motivo, a cidade e o bairro, e pode anexar uma foto, PDF ou vídeo de até 5 MB como prova. Antes de enviar, ele é obrigado a aceitar o Termo de Responsabilidade Legal — avisando que fazer denúncia falsa é crime — para evitar trotes. A denúncia não aparece direto para todo mundo: ela vai primeiro para o Painel do Administrador (<span class="code-inline">/admin</span>), onde o moderador olha o relato e a prova e decide se Aprova ou Rejeita. Só as aprovadas vão para o feed público.”
+            </div>
+        </section>
+
+        <!-- =================================================================
+             SLIDE 8: REDE SOCIAL CIDADÃ E RANKING (PARTE 5)
+             ================================================================= -->
+        <section class="slide" data-slide="8">
+            <div class="slide-header">
+                <div class="slide-kicker">
+                    <span class="slide-num">08 / 11</span>
+                    <span class="pill-badge">Parte 5 &bull; Comunidade</span>
+                </div>
+                <h2 class="slide-title">Rede social cidadã e <span class="accent">Ranking ao vivo</span></h2>
+                <p class="slide-subtitle">Como a comunidade dá força para os problemas mais recorrentes.</p>
+            </div>
+
+            <div class="grid-3">
+                <article class="card">
+                    <div class="card-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    </div>
+                    <h3 class="card-title">Feed público</h3>
+                    <p class="card-text">Em <span class="code-inline">/denuncias-publicas</span>, qualquer pessoa pode ver os casos aprovados e <strong>filtrar pela sua cidade</strong> sem precisar de login.</p>
+                </article>
+
+                <article class="card card-highlight">
+                    <div class="card-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>
+                    </div>
+                    <h3 class="card-title">“Também fui afetado”</h3>
+                    <p class="card-text">Quem passou pelo mesmo problema clica no botão <strong>Também fui afetado</strong> e pode deixar um comentário contando seu caso.</p>
+                </article>
+
+                <article class="card">
+                    <div class="card-icon">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0 0 12 0V2Z"/></svg>
+                    </div>
+                    <h3 class="card-title">Ranking ao vivo</h3>
+                    <p class="card-text">Quanto mais gente clica, mais a denúncia sobe no <strong>Ranking</strong>, aparecendo no topo da página inicial como alerta.</p>
+                </article>
+            </div>
+
+            <div class="speaker-box">
+                <span class="speaker-label">🎤 Parte 5 — O que falar neste slide:</span>
+                “No feed público (<span class="code-inline">/denuncias-publicas</span>), qualquer pessoa pode ver os casos aprovados e filtrar pela sua cidade. Quem passou pelo mesmo problema clica no botão ‘Também fui afetado’ e pode deixar um comentário. Quanto mais gente clica em ‘Também fui afetado’, mais a denúncia sobe no Ranking, aparecendo no topo da página inicial para todo mundo ver quais empresas ou golpes estão afetando mais pessoas.”
+            </div>
+        </section>
+
+        <!-- =================================================================
+             SLIDE 9: NOTÍCIAS E CANAIS DE APOIO (PARTE 5)
+             ================================================================= -->
+        <section class="slide" data-slide="9">
+            <div class="slide-header">
+                <div class="slide-kicker">
+                    <span class="slide-num">09 / 11</span>
+                    <span class="pill-badge">Parte 5 &bull; Prevenção e Apoio</span>
+                </div>
+                <h2 class="slide-title">Portal de Notícias e <span class="accent">Barra de Emergência</span></h2>
+                <p class="slide-subtitle">Informação atualizada contra golpes e discagem rápida com 1 toque em todas as telas.</p>
+            </div>
+
+            <div class="grid-2">
+                <article class="card">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 6px;">
+                        <div class="card-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 22h16a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v16a2 2 0 0 1-2 2Zm0 0a2 2 0 0 1-2-2v-9c0-1.1.9-2 2-2h2"/><path d="M18 14h-8"/><path d="M15 18h-5"/><path d="M10 6h8v4h-8V6Z"/></svg>
+                        </div>
+                        <h3 class="card-title">Portal de Notícias (<span class="code-inline">/noticias</span>)</h3>
+                    </div>
+                    <ul class="feature-list">
+                        <li><span class="check-dot">✓</span> <span><strong>Atualiza a cada 15 minutos</strong> automaticamente</span></li>
+                        <li><span class="check-dot">✓</span> <span>Alertas de novos golpes (<strong>falsa central do cartão e Pix</strong>)</span></li>
+                        <li><span class="check-dot">✓</span> <span>Notícias sobre impostos e direitos do consumidor</span></li>
+                    </ul>
+                </article>
+
+                <article class="card card-highlight">
+                    <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 6px;">
+                        <div class="card-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                        </div>
+                        <h3 class="card-title">Barra de emergência (1 toque)</h3>
+                    </div>
+                    <p class="card-text">Fixa lá embaixo em todas as telas para ligar direto pelo celular:</p>
+                    <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-top: 6px; font-family: var(--font-mono); font-size: 13px;">
+                        <div style="padding: 8px 12px; background: rgba(7,10,18,0.7); border-radius: 8px; border: 1px solid #334155;">Polícia: <strong style="color:#ff66b2;">190</strong> &bull; Bombeiros: <strong style="color:#ff66b2;">193</strong></div>
+                        <div style="padding: 8px 12px; background: rgba(7,10,18,0.7); border-radius: 8px; border: 1px solid #334155;">SAMU: <strong style="color:#ff66b2;">192</strong> &bull; Procon: <strong style="color:#ff66b2;">151</strong></div>
+                        <div style="padding: 8px 12px; background: rgba(7,10,18,0.7); border-radius: 8px; border: 1px solid #334155;">Defesa Civil: <strong style="color:#ff66b2;">199</strong></div>
+                        <div style="padding: 8px 12px; background: rgba(7,10,18,0.7); border-radius: 8px; border: 1px solid #334155;">Mulher: <strong style="color:#ff66b2;">180</strong> &bull; Disque: <strong style="color:#ff66b2;">181</strong></div>
+                    </div>
+                </article>
+            </div>
+
+            <div class="speaker-box">
+                <span class="speaker-label">🎤 Parte 5 — O que falar neste slide:</span>
+                “Temos também o Portal de Notícias (<span class="code-inline">/noticias</span>), que atualiza a cada 15 minutos com alertas sobre novos golpes (como o golpe da falsa central do cartão e do Pix), impostos e direitos do consumidor. E lá embaixo, em todas as telas, fica fixa uma barra com os Canais de Emergência e Apoio para ligar com 1 toque: Polícia (190), Bombeiros (193), SAMU (192), Procon (151), Defesa Civil (199), Mulher (180) e Disque Denúncia (181).”
+            </div>
+        </section>
+
+        <!-- =================================================================
+             SLIDE 10: DEMONSTRAÇÃO AO VIVO + PRONTO PARA USO (PARTE 5)
+             ================================================================= -->
+        <section class="slide" data-slide="10">
+            <div class="slide-header">
+                <div class="slide-kicker">
+                    <span class="slide-num">10 / 11</span>
+                    <span class="pill-badge pill-emerald">Parte 5 &bull; Demonstração e Fechamento Técnico</span>
+                </div>
+                <h2 class="slide-title">Demonstração ao vivo &amp; <span class="accent">Pronto para uso</span></h2>
+                <p class="slide-subtitle">Funciona no computador e no celular, testado e publicado na nuvem.</p>
+            </div>
+
+            <div class="grid-4" style="margin-bottom: 18px;">
+                <a href="/denuncias-publicas" class="card" style="text-decoration: none;">
+                    <span class="step-badge">1</span>
+                    <h3 class="card-title">Feed público</h3>
+                    <p class="card-text">Ver denúncias aprovadas e filtrar por cidade &rarr;</p>
+                </a>
+                <a href="/denuncias-publicas" class="card" style="text-decoration: none;">
+                    <span class="step-badge">2</span>
+                    <h3 class="card-title">Também fui afetado</h3>
+                    <p class="card-text">Clicar para apoiar e comentar no caso &rarr;</p>
+                </a>
+                <a href="/denuncias-publicas?ordem=ranking" class="card" style="text-decoration: none;">
+                    <span class="step-badge">3</span>
+                    <h3 class="card-title">Ranking ao vivo</h3>
+                    <p class="card-text">Ver os casos com mais afetados no topo &rarr;</p>
+                </a>
+                <a href="/noticias" class="card" style="text-decoration: none;">
+                    <span class="step-badge">4</span>
+                    <h3 class="card-title">Portal de Notícias</h3>
+                    <p class="card-text">Ver alertas de golpes e barra 190/151 &rarr;</p>
+                </a>
+            </div>
+
+            <div class="grid-3">
+                <div class="card card-highlight" style="flex-direction: row; align-items: center; gap: 16px; padding: 16px 20px;">
+                    <div class="metric-big" style="font-size: 28px;">Docker</div>
+                    <div class="card-text" style="font-size: 13px;">Roda em contêiner em qualquer máquina</div>
+                </div>
+                <div class="card card-highlight" style="flex-direction: row; align-items: center; gap: 16px; padding: 16px 20px;">
+                    <div class="metric-big metric-emerald" style="font-size: 32px;">20</div>
+                    <div class="card-text" style="font-size: 13px;"><strong>Testes automatizados</strong> (<span class="code-inline">test_suite.py</span>)</div>
+                </div>
+                <div class="card card-highlight" style="flex-direction: row; align-items: center; gap: 16px; padding: 16px 20px;">
+                    <div class="metric-big" style="font-size: 28px; color: #60a5fa;">Nuvem</div>
+                    <div class="card-text" style="font-size: 13px;">Publicado na nuvem para qualquer pessoa testar</div>
+                </div>
+            </div>
+
+            <div class="speaker-box">
+                <span class="speaker-label">🎤 Parte 5 — Fechamento Técnico (1 frase):</span>
+                “Por fim, o projeto já roda em Docker, tem 20 testes automatizados (<span class="code-inline">test_suite.py</span>) conferindo que cadastro, denúncia, moderação e segurança estão funcionando, e está publicado na nuvem para qualquer pessoa testar.”
+            </div>
+        </section>
+
+        <!-- =================================================================
+             SLIDE 11: OBRIGADA / PERGUNTAS
+             ================================================================= -->
+        <section class="slide" data-slide="11">
+            <div style="text-align: center; max-width: 780px; margin: 0 auto;">
+                <div style="display: inline-flex; margin-bottom: 18px;">
+                    <span class="pill-badge">Projeto Integrador &bull; SENAC Araraquara</span>
+                </div>
+                <h2 style="font-size: clamp(44px, 6vw, 72px); font-weight: 900; line-height: 1.05; margin-bottom: 16px;">
+                    Obrigada!
+                </h2>
+                <p style="font-size: 20px; color: var(--text-secondary); line-height: 1.6; margin-bottom: 26px;">
+                    Plataforma segura, com moderação, provas verificadas e rede social cidadã.
+                </p>
+                <div style="font-size: 32px; font-weight: 900; color: var(--neon-pink); text-shadow: 0 0 20px rgba(255,0,127,0.5); margin-bottom: 28px;">
+                    Perguntas?
+                </div>
+                <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-bottom: 24px;">
+                    <span class="pill-badge">Aline de Castro</span>
+                    <span class="pill-badge">Roberto Carlos Correa Junior</span>
+                    <span class="pill-badge">Ivan Guimarães</span>
+                </div>
+                <div>
+                    <a href="/home" class="btn-ctrl btn-primary-ctrl" style="text-decoration: none; padding: 12px 24px; font-size: 15px;">
+                        🚀 Ir para o Site ao Vivo (/home)
+                    </a>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- PROGRESS BAR -->
+    <div class="progress-track">
+        <div id="progressFill" class="progress-fill"></div>
+    </div>
+
+    <!-- BOTTOM CONTROLS -->
+    <footer class="bottom-bar">
+        <div style="font-family: var(--font-mono); font-size: 12px; color: var(--text-muted);">
+            Slide <strong id="slideCounter" style="color: #fff;">01 / 11</strong> &bull; Setas <span class="code-inline">←</span> <span class="code-inline">→</span>
+        </div>
+
+        <div id="slideDots" class="slide-dots"></div>
+
+        <div class="nav-controls">
+            <button type="button" id="btnNotes" class="btn-ctrl" onclick="toggleNotes()" title="Mostrar/Ocultar o que falar em cada slide (Tecla R)">
+                🎤 Roteiro de Fala
+            </button>
+            <button type="button" class="btn-ctrl" onclick="prevSlide()" title="Slide Anterior (←)">
+                &larr; Anterior
+            </button>
+            <button type="button" class="btn-ctrl btn-primary-ctrl" onclick="nextSlide()" title="Próximo Slide (→)">
+                Próximo &rarr;
+            </button>
+            <button type="button" class="btn-ctrl" onclick="toggleFullScreen()" title="Tela Cheia (Tecla F)">
+                ⛶ Tela Cheia
+            </button>
+        </div>
+    </footer>
+
+    <script>
+        const slides = Array.from(document.querySelectorAll('.slide'));
+        const totalSlides = slides.length;
+        let currentIndex = 0;
+
+        const counterEl = document.getElementById('slideCounter');
+        const progressEl = document.getElementById('progressFill');
+        const dotsContainer = document.getElementById('slideDots');
+        const btnNotes = document.getElementById('btnNotes');
+
+        slides.forEach((_, idx) => {
+            const btn = document.createElement('button');
+            btn.className = 'dot' + (idx === 0 ? ' active' : '');
+            btn.setAttribute('aria-label', 'Ir para slide ' + (idx + 1));
+            btn.onclick = () => goToSlide(idx);
+            dotsContainer.appendChild(btn);
+        });
+
+        function updateUI() {
+            slides.forEach((s, i) => {
+                s.classList.toggle('active', i === currentIndex);
+            });
+            const dots = dotsContainer.querySelectorAll('.dot');
+            dots.forEach((d, i) => {
+                d.classList.toggle('active', i === currentIndex);
+            });
+            const num = String(currentIndex + 1).padStart(2, '0');
+            const tot = String(totalSlides).padStart(2, '0');
+            counterEl.textContent = `${num} / ${tot}`;
+            progressEl.style.width = `${((currentIndex + 1) / totalSlides) * 100}%`;
+        }
+
+        function goToSlide(index) {
+            currentIndex = (index + totalSlides) % totalSlides;
+            updateUI();
+        }
+
+        function nextSlide() {
+            goToSlide(currentIndex + 1);
+        }
+
+        function prevSlide() {
+            goToSlide(currentIndex - 1);
+        }
+
+        function toggleNotes() {
+            const active = document.body.classList.toggle('show-notes');
+            btnNotes.classList.toggle('active-toggle', active);
+        }
+
+        function toggleFullScreen() {
+            if (!document.fullscreenElement) {
+                document.documentElement.requestFullscreen().catch(() => {});
+            } else {
+                document.exitFullscreen().catch(() => {});
+            }
+        }
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
+                e.preventDefault();
+                nextSlide();
+            } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+                e.preventDefault();
+                prevSlide();
+            } else if (e.key === 'Home') {
+                e.preventDefault();
+                goToSlide(0);
+            } else if (e.key === 'End') {
+                e.preventDefault();
+                goToSlide(totalSlides - 1);
+            } else if (e.key === 'f' || e.key === 'F') {
+                e.preventDefault();
+                toggleFullScreen();
+            } else if (e.key === 'r' || e.key === 'R') {
+                e.preventDefault();
+                toggleNotes();
+            }
+        });
+
+        updateUI();
+    </script>
+</body>
+</html>

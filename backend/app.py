@@ -284,6 +284,10 @@ def create_app():
     def diferencial():
         return render_template("diferencial.html")
 
+    @app.route("/apresentacao")
+    def apresentacao():
+        return send_from_directory(BASE_DIR, "apresentacao_protejaja.html")
+
     @app.route("/api/municipios")
     def api_municipios():
         termo = (request.args.get("q") or "").strip()

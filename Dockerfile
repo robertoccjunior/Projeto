@@ -12,6 +12,7 @@ RUN pip install --no-cache-dir -r /app/requirements.txt
 COPY backend /app/backend
 COPY home /app/home
 COPY run.py /app/run.py
+COPY apresentacao_protejaja.html /app/apresentacao_protejaja.html
 
 RUN mkdir -p /app/db /app/backend/uploads
 
