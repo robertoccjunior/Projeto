@@ -13,7 +13,7 @@
   - *Minimização de dados e 18+:* Cadastro exige apenas nome, sobrenome, e-mail, data de nascimento (com validação estrita de maioridade >= 18 anos) e município, com indicação explícita de campos obrigatórios (`* (obrigatório)`).
   - *Direito ao Esquecimento:* Exclusão definitiva de conta (`/excluir-conta`) mediante senha, expurgando usuário, denúncias no banco e arquivos físicos de prova em `backend/uploads/`.
 - **Segurança & Filtro Antiofensa:** Hash criptográfico `scrypt`, queries 100% parametrizadas contra SQL Injection, proteção CSRF, cabeçalhos HTTP de segurança e bloqueio heurístico de palavras ofensivas/leet-speak.
-- **Alta Performance & Acessibilidade (WCAG AAA):** Interface *Dark Neon / Cyberpunk* com CSS crítico minificado inlined no `<head>`, compressão Gzip nativa e barra fixa 24h com discagem rápida de emergência (`190`, `193`, `192`, `151`, `199`, `180`, `181`).
+- **Alta Performance & Acessibilidade (WCAG AAA):** Interface *Dark Neon / Cyberpunk* com CSS crítico minificado inlined no `<head>`, compressão Gzip nativa e barra fixa com discagem rápida de emergência e apoio (`190`, `193`, `192`, `151`, `199`, `180`, `181`).
 
 ---
 

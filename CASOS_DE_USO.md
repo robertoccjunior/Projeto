@@ -13,7 +13,7 @@
                  │  UC02 Entrar (login)
                  │  UC09 Consultar Portal de Notícias e Alertas
                  │  UC11 Consultar feed comunitário
-                 │  UC14 Acessar telefones de emergência 24h
+                 │  UC14 Acessar canais de emergência e apoio
                  ▼
         ┌──────────────────────┐
         │       ProtejaJA      │
@@ -59,7 +59,7 @@
 | **UC11** | Consultar feed público de denúncias | Visitante | Navegar pelo blog comunitário de ocorrências auditadas com filtros por categoria e município |
 | **UC12** | Excluir conta e dados | Usuário | Excluir definitivamente cadastro, denúncias e apagar fotos do disco com senha |
 | **UC13** | Aceitar Termo Legal | Usuário | Ler e aceitar o contrato de responsabilidade para liberar o envio da denúncia |
-| **UC14** | Discagem de emergência 24h | Visitante / Usuário | Acessar com 1 toque links diretos para 190, 193, 192, 151, 199, 180 e 181 |
+| **UC14** | Discagem de emergência e apoio | Visitante / Usuário | Acessar com 1 toque links diretos para 190, 193, 192, 151, 199, 180 e 181 |
 
 ---
 

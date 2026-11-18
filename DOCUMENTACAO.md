@@ -105,12 +105,12 @@ Denúncia passa a 'APROVADO' e é disponibilizada no Feed Público
 ### 3.8 Portal de Notícias e Alertas
 - Página `/noticias` com notícias e alertas filtrados por tema (golpes, impostos, consumidor).
 
-### 3.9 Barra Fixa de Discagem Rápida de Emergência (24h)
+### 3.9 Barra Fixa de Discagem Rápida de Emergência e Apoio
 - Barra de utilidade pública presente em todas as páginas com links diretos `tel:`:
   - Polícia Militar: **190**
   - Corpo de Bombeiros: **193**
   - SAMU: **192**
-  - Procon SP: **151**
+  - Procon: **151** (horário comercial)
   - Defesa Civil: **199**
   - Atendimento à Mulher: **180**
   - Disque Denúncia: **181**
